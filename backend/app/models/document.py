@@ -63,3 +63,4 @@ class PattaDocument(Base):
     # Relationships
     farmer: Mapped["User"] = relationship("User", foreign_keys=[farmer_id])
     parcel: Mapped[Optional["FarmerParcel"]] = relationship("FarmerParcel", foreign_keys=[applied_to_parcel_id])
+

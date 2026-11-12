@@ -125,6 +125,50 @@ async def upload_and_extract_patta(
             detail=f"Unable to extract text from document: {str(e)}"
         )
 
+    # Validate document page limit (Standard Odisha Patta / ROR is 1-3 pages)
+    page_count = fields_data.get("page_count", 1)
+    if page_count > 6:
+        doc_record = PattaDocument(
+            id=doc_id,
+            farmer_id=current_farmer.id,
+            original_filename=file.filename,
+            file_path=destination_path,
+            file_size_bytes=file_size,
+            mime_type=file.content_type or "application/octet-stream",
+            document_type="ODISHA_PATTA_ROR",
+            status=DocumentProcessingStatus.FAILED.value,
+            error_message=f"Uploaded document has {page_count} pages. Standard Odisha Record of Rights (Patta) is 1 to 3 pages.",
+        )
+        db.add(doc_record)
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"The uploaded document contains {page_count} pages. Official Odisha Patta / Record of Rights documents (Schedule I Form No. 39-A) are typically 1 to 3 pages. Please upload only the official Patta/ROR document pages."
+        )
+
+    # Validate that at least one key land identifier was detected
+    has_khata = bool(fields_data.get("khata_number"))
+    has_plot = bool(fields_data.get("plot_number"))
+    has_village = bool(fields_data.get("village"))
+    if not (has_khata or has_plot or has_village):
+        doc_record = PattaDocument(
+            id=doc_id,
+            farmer_id=current_farmer.id,
+            original_filename=file.filename,
+            file_path=destination_path,
+            file_size_bytes=file_size,
+            mime_type=file.content_type or "application/octet-stream",
+            document_type="ODISHA_PATTA_ROR",
+            status=DocumentProcessingStatus.FAILED.value,
+            error_message="Uploaded document does not contain recognizable Odisha Patta land records (Khata, Plot, or Mouza).",
+        )
+        db.add(doc_record)
+        await db.commit()
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="The uploaded document could not be identified as an Odisha Record of Rights (Patta). Mandatory land-record details (Khata Number, Plot Number, or Mouza) were not detected. Please upload an official Odisha Patta / ROR (Schedule I Form No. 39-A)."
+        )
+
     # Cross-reference with administrative master tables in PostgreSQL
     admin_match_info = {}
     if fields_data.get("district"):
@@ -270,3 +314,4 @@ async def confirm_and_link_patta(
 
     await db.commit()
     return {"success": True, "message": "Patta document verified and linked successfully."}
+

@@ -54,3 +54,4 @@ class PattaDocumentSummaryResponse(BaseModel):
 class PattaConfirmRequest(BaseModel):
     applied_parcel_id: Optional[uuid.UUID] = None
     verified_fields: Optional[Dict[str, Any]] = None
+

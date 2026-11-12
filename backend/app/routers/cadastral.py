@@ -117,42 +117,48 @@ async def lookup_cadastral_parcel(
     """
     district = payload.district.strip()
     tahasil = payload.tahasil.strip()
-    village = payload.village.strip()
-    khata = payload.khata_number.strip()
-    plot = payload.plot_number.strip()
+    village = (payload.village or "").strip()
+    khata = (payload.khata_number or "").strip()
+    plot = (payload.plot_number or "").strip()
 
-    if not district or not tahasil or not village or not plot:
+    if not plot:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="District, Tahasil, Village, and Plot number are mandatory for cadastral lookup."
+            detail="Plot / Dag number is required for cadastral lookup."
         )
 
-    # Search PostGIS cadastral_parcels
-    query = text("""
-        SELECT 
-            id, state_code, district_name, tahasil_name, village_name,
-            khata_number, plot_number, recorded_area_acres,
-            ROUND(CAST(ST_Area(geom::geography) * 0.000247105 AS numeric), 2) as calc_area_acres,
-            ST_AsGeoJSON(geom) as geom_json,
-            ST_XMin(geom) as min_lon,
-            ST_YMin(geom) as min_lat,
-            ST_XMax(geom) as max_lon,
-            ST_YMax(geom) as max_lat,
-            source, source_reference, verification_status
-        FROM cadastral_parcels
-        WHERE district_name ILIKE :district
-          AND tahasil_name ILIKE :tahasil
-          AND village_name ILIKE :village
-          AND (plot_number ILIKE :plot OR plot_number = :plot)
-    """)
+    if not district:
+        district = "Cuttack"
 
-    result = await db.execute(query, {
-        "district": district,
-        "tahasil": tahasil,
-        "village": village,
-        "plot": plot
-    })
-    rows = result.fetchall()
+    # Search PostGIS cadastral_parcels
+    if tahasil and village:
+        query = text("""
+            SELECT 
+                id, state_code, district_name, tahasil_name, village_name,
+                khata_number, plot_number, recorded_area_acres,
+                ROUND(CAST(ST_Area(geom::geography) * 0.000247105 AS numeric), 2) as calc_area_acres,
+                ST_AsGeoJSON(geom) as geom_json,
+                ST_XMin(geom) as min_lon,
+                ST_YMin(geom) as min_lat,
+                ST_XMax(geom) as max_lon,
+                ST_YMax(geom) as max_lat,
+                source, source_reference, verification_status
+            FROM cadastral_parcels
+            WHERE district_name ILIKE :district
+              AND tahasil_name ILIKE :tahasil
+              AND village_name ILIKE :village
+              AND (plot_number ILIKE :plot OR plot_number = :plot)
+        """)
+
+        result = await db.execute(query, {
+            "district": district,
+            "tahasil": tahasil,
+            "village": village,
+            "plot": plot
+        })
+        rows = result.fetchall()
+    else:
+        rows = []
 
     if not rows:
         # Flexible fallback matching across mouza variations or matching by plot & khata
@@ -170,7 +176,12 @@ async def lookup_cadastral_parcel(
             FROM cadastral_parcels
             WHERE district_name ILIKE :district
               AND (plot_number ILIKE :plot OR plot_number = :plot)
-              AND (:village ILIKE '%' || village_name || '%' OR village_name ILIKE '%' || :village || '%' OR khata_number = :khata)
+              AND (
+                :village = '' 
+                OR :village ILIKE '%' || village_name || '%' 
+                OR village_name ILIKE '%' || :village || '%' 
+                OR khata_number = :khata
+              )
         """)
         fb_result = await db.execute(fallback_query, {
             "district": district,

@@ -172,6 +172,10 @@ export const PattaUploadSection: React.FC<PattaUploadSectionProps> = ({
 
   const handleApplyToRegistration = (autoLocate: boolean = false) => {
     if (!editableFields) return;
+    if (autoLocate && !editableFields.plot_number?.trim()) {
+      setErrorMessage('Please provide a Plot Number in the form below before locating on the satellite map.');
+      return;
+    }
     onApplyExtractedDetails(editableFields, autoLocate);
     setAppliedSuccess(true);
 

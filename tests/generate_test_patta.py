@@ -107,3 +107,4 @@ if __name__ == "__main__":
     img = Image.open(jpg_path)
     img.save(pdf_path, "PDF", resolution=150.0)
     print(f"Generated test patta PDF at: {pdf_path}")
+
