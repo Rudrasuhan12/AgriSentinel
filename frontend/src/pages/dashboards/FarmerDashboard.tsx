@@ -43,7 +43,7 @@ export const FarmerDashboard: React.FC = () => {
 
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex flex-col text-right">
-            <span className="text-xs font-semibold text-sand-50">{user?.full_name}</span>
+            <span className="text-xs font-semibold text-sand-50">{user?.full_name || user?.display_name}</span>
             <span className="text-[10px] font-mono text-olive-400">
               {farmerProfile ? `${farmerProfile.village}, ${farmerProfile.district}` : user?.email}
             </span>
@@ -91,7 +91,7 @@ export const FarmerDashboard: React.FC = () => {
         <div className="bg-gradient-to-r from-forest-900/80 via-forest-900/50 to-charcoal-900 border border-forest-800 rounded-2xl p-6 relative overflow-hidden">
           <div className="relative z-10">
             <h1 className="text-xl sm:text-2xl font-display font-bold text-sand-50 mb-1">
-              Namaste, {user?.full_name}
+              Namaste, {user?.full_name || user?.display_name}
             </h1>
             <p className="text-xs sm:text-sm text-sand-300 max-w-2xl">
               Welcome to your AgriSentinel monitoring center. Track your paddy crop growth, manage your land parcels, and access verified 3D photogrammetric yield estimates.

@@ -42,7 +42,7 @@ export const GovernmentDashboard: React.FC = () => {
 
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex flex-col text-right">
-            <span className="text-xs font-semibold text-sand-50">{user?.full_name}</span>
+            <span className="text-xs font-semibold text-sand-50">{user?.full_name || user?.display_name}</span>
             <span className="text-[10px] font-mono text-teal-400 flex items-center gap-1 justify-end">
               <ShieldCheck className="w-3 h-3 text-teal-400" />
               Verified Official

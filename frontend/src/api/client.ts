@@ -15,7 +15,10 @@ export async function apiRequest<T = any>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+  // Normalize endpoint to prevent double /api
+  const cleanEndpoint = endpoint.startsWith("/api") ? endpoint.slice(4) : endpoint;
+
+  const response = await fetch(`${API_BASE_URL}${cleanEndpoint}`, {
     ...options,
     headers,
   });
@@ -33,3 +36,22 @@ export async function apiRequest<T = any>(
 
   return response.json();
 }
+
+export const api = {
+  get: <T = any>(endpoint: string, options?: RequestInit) => 
+    apiRequest<T>(endpoint, { ...options, method: 'GET' }),
+  post: <T = any>(endpoint: string, body?: any, options?: RequestInit) => 
+    apiRequest<T>(endpoint, { 
+      ...options, 
+      method: 'POST', 
+      body: body ? JSON.stringify(body) : undefined 
+    }),
+  put: <T = any>(endpoint: string, body?: any, options?: RequestInit) => 
+    apiRequest<T>(endpoint, { 
+      ...options, 
+      method: 'PUT', 
+      body: body ? JSON.stringify(body) : undefined 
+    }),
+  delete: <T = any>(endpoint: string, options?: RequestInit) => 
+    apiRequest<T>(endpoint, { ...options, method: 'DELETE' }),
+};

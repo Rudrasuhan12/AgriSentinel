@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   Tractor, 
   Landmark, 
-  User, 
-  MapPin, 
-  Wheat, 
   CheckCircle2, 
   ArrowRight, 
   ArrowLeft, 
@@ -14,11 +11,7 @@ import {
   AlertCircle,
   Clock,
   Sparkles,
-  Lock,
-  Phone,
-  Mail,
-  Loader2,
-  Building
+  Loader2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AuthVisualPanel } from '../components/auth/AuthVisualPanel';

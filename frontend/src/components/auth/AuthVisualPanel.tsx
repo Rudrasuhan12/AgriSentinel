@@ -2,15 +2,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Scan, 
-  MapPin, 
   Layers, 
   Plane, 
-  LineChart, 
   Sparkles, 
-  CheckCircle2, 
   Box,
-  Compass,
-  Activity,
   Wheat
 } from 'lucide-react';
 

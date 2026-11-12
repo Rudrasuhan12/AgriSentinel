@@ -1,21 +1,9 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { apiRequest } from '../api/client';
+import { UserRole, AccountStatus, UserProfile } from '../types';
 
-export type UserRole = 'FARMER' | 'GOVERNMENT_OFFICIAL' | 'ADMIN';
-export type AccountStatus = 'PENDING' | 'APPROVED' | 'REJECTED' | 'SUSPENDED';
-
-export interface UserProfile {
-  id: string;
-  email: string | null;
-  mobile_number: string | null;
-  role: UserRole;
-  account_status: AccountStatus;
-  is_mobile_verified: boolean;
-  is_email_verified: boolean;
-  created_at: string;
-  display_name: string;
-  profile?: Record<string, any>;
-}
+export { UserRole };
+export type { AccountStatus, UserProfile };
 
 interface AuthContextType {
   user: UserProfile | null;

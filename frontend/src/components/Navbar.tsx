@@ -5,7 +5,6 @@ import {
   Menu, 
   X, 
   ArrowUpRight, 
-  User, 
   LogOut,
   LayoutDashboard
 } from 'lucide-react';
@@ -173,8 +172,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
                   Sign In
                 </Link>
 
-                <Link
-                  to="/signup"
+                <button
+                  onClick={onOpenPreview || (() => navigate('/signup'))}
                   className="relative group overflow-hidden px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-forest-700 hover:from-emerald-500 hover:to-forest-600 text-sand-50 text-xs font-mono uppercase tracking-wider font-semibold border border-lime-dim flex items-center gap-1.5 shadow-sm hover:shadow-subtle-glow transition-all active:scale-95"
                 >
                   <span className="relative z-10 flex items-center gap-1.5">
@@ -182,7 +181,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
                     <ArrowUpRight className="w-3.5 h-3.5 text-lime-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
                   </span>
                   <div className="absolute inset-0 bg-lime-accent/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </Link>
+                </button>
               </div>
             )}
           </div>

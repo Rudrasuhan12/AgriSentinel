@@ -3,7 +3,6 @@ import { useAuth } from '../../context/AuthContext';
 import { api } from '../../api/client';
 import { 
   Shield, 
-  Users, 
   CheckCircle2, 
   XCircle, 
   Clock, 
@@ -117,7 +116,7 @@ export const AdminDashboard: React.FC = () => {
 
         <div className="flex items-center gap-4">
           <div className="hidden sm:flex flex-col text-right">
-            <span className="text-xs font-semibold text-sand-50">{user?.full_name}</span>
+            <span className="text-xs font-semibold text-sand-50">{user?.full_name || user?.display_name}</span>
             <span className="text-[10px] font-mono text-amber-400">
               Root Administrator ({user?.email})
             </span>

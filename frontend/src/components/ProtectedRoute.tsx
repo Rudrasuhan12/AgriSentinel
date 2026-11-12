@@ -12,10 +12,10 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   children, 
   allowedRoles 
 }) => {
-  const { user, isAuthenticated, loading } = useAuth();
+  const { user, isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-charcoal-950 flex flex-col items-center justify-center text-sand-200">
         <div className="w-10 h-10 border-2 border-forest-600 border-t-lime-accent rounded-full animate-spin mb-4" />

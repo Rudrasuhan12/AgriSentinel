@@ -8,8 +8,6 @@ import {
   User, 
   ArrowRight, 
   AlertCircle, 
-  CheckCircle2, 
-  Sparkles,
   Shield,
   Loader2
 } from 'lucide-react';
