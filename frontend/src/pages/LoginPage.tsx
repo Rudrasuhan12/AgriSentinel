@@ -78,8 +78,8 @@ export const LoginPage: React.FC = () => {
   const { login } = useAuth();
 
   const [activePersona, setActivePersona] = useState<PersonaType>('FARMER');
-  const [identifier, setIdentifier] = useState('farmer@agrisentinel.local');
-  const [password, setPassword] = useState('FarmerPass@2026');
+  const [identifier, setIdentifier] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   
@@ -93,11 +93,6 @@ export const LoginPage: React.FC = () => {
     setActivePersona(personaId);
     setErrorMessage(null);
     setQuickFillSuccess(false);
-    const targetPersona = PERSONAS.find(p => p.id === personaId);
-    if (targetPersona) {
-      setIdentifier(targetPersona.demoIdentifier);
-      setPassword(targetPersona.demoPassword);
-    }
   };
 
   const handleQuickFill = () => {

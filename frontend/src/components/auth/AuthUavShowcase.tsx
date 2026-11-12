@@ -20,12 +20,7 @@ export const AuthUavShowcase: React.FC = () => {
   }, []);
 
   return (
-    <motion.div 
-      initial={{ opacity: 0, x: -16 }}
-      animate={{ opacity: 1, x: 0 }}
-      transition={{ duration: 0.6, ease: "easeOut" }}
-      className="flex flex-col justify-center max-w-lg lg:max-w-xl w-full"
-    >
+    <div className="flex flex-col justify-center max-w-lg lg:max-w-xl w-full">
       
       {/* Aerial UAV Imagery Card with Live Animated Geospatial HUD */}
       <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200/90 shadow-md hover:shadow-xl transition-all duration-300 aspect-[16/9.5] max-h-[185px] sm:max-h-[205px] lg:max-h-[220px] bg-slate-900 group cursor-default">
@@ -233,6 +228,6 @@ export const AuthUavShowcase: React.FC = () => {
         </div>
       </div>
 
-    </motion.div>
+    </div>
   );
 };
