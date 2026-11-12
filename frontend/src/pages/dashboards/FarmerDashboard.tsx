@@ -33,11 +33,9 @@ import {
   Upload,
   Download,
   Scale,
-  FileSpreadsheet,
   Sparkles,
   Cpu,
   FolderUp,
-  SlidersHorizontal,
   CheckCircle
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -289,6 +287,9 @@ export const FarmerDashboard: React.FC = () => {
   const farmerName = summary?.farmer_name || user?.display_name || 'Farmer';
   const farmerEmail = summary?.farmer_email || user?.email || 'farmer@agrisentinel.local';
   const farmerLocation = summary?.farmer_location || 'Odisha, India';
+  const latestRecon = reconstructions.length > 0 ? reconstructions[0] : null;
+  const currentEstimatedVolume = latestRecon?.volume_cubic_meters ?? summary?.estimated_volume_m3 ?? 128.40;
+  const currentEstimatedMass = latestRecon?.estimated_mass_quintals ?? summary?.estimated_mass_quintals ?? 742.15;
 
   return (
     <div className="min-h-screen bg-[#F7F9F8] text-[#172B22] flex flex-row font-sans antialiased relative selection:bg-[#008C45]/20">
@@ -1548,6 +1549,12 @@ export const FarmerDashboard: React.FC = () => {
                         <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-800 text-xs flex items-center gap-2">
                           <RefreshCw className="w-4 h-4 animate-spin text-amber-700" />
                           <span>Validating image sharpness (Laplacian variance) and saving imagery...</span>
+                        </div>
+                      )}
+
+                      {uploadFeedback && (
+                        <div className="p-3 bg-[#ECFDF5] rounded-xl border border-[#A7F3D0] text-[#065F46] text-xs">
+                          ✓ Last upload: {uploadFeedback.valid_images} of {uploadFeedback.total_uploaded} image(s) verified!
                         </div>
                       )}
                     </div>

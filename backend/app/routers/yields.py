@@ -200,3 +200,4 @@ async def get_yield_estimate_detail(
         "reconstruction_volume_m3": cert.reconstruction.volume_cubic_meters if cert.reconstruction else None,
         "issue_date": cert.issue_date.isoformat(),
     }
+

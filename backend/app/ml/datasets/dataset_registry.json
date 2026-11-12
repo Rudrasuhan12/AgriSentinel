@@ -121,3 +121,4 @@
     "statement": "No peer-reviewed, open-access, multi-view photogrammetric dataset exists specifically for in-situ harvested rough paddy heaps piled on rural threshing yards (Khalia). AgriSentinel implements an authentic multi-view photogrammetry pipeline (feature extraction, bundle adjustment, base plane estimation, and volume integration) capable of processing overlapping drone or smartphone camera series, while providing a surveyed reference calibration baseline."
   }
 }
+

@@ -107,3 +107,4 @@ class PaddySegmentationUNet:
             for k in self.weights:
                 if k in data:
                     self.weights[k] = data[k]
+

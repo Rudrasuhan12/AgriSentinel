@@ -101,3 +101,4 @@ def test_invalid_area_rejection():
     heaps = [HeapMeasurement(heap_id="h1", volume_cubic_meters=10.0)]
     with pytest.raises(ValueError):
         yield_engine.estimate_total_yield(heaps=heaps, parcel_area_acres=0.0)
+

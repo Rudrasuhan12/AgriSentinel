@@ -57,3 +57,4 @@ class PaddyInferenceService:
 
 
 paddy_inference_service = PaddyInferenceService()
+

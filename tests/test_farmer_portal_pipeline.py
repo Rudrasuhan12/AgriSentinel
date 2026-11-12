@@ -1,8 +1,6 @@
 import pytest
 import numpy as np
 import cv2
-from fastapi.testclient import TestClient
-from app.main import app
 from app.core.photogrammetry.photogrammetry_pipeline import photogrammetry_engine
 from app.ml.infer import paddy_inference_service
 from app.services.yield_engine import yield_engine, HeapMeasurement, STANDARD_SWARNA_BULK_DENSITY
@@ -65,3 +63,4 @@ def test_yield_engine_benchmark_accuracy():
     assert res.yield_quintals_per_acre == 23.12
     assert res.benchmark_status in ["Regional Average (Cuttack)", "High Yield"]
     assert res.is_outlier is False
+

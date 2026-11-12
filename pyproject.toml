@@ -1,0 +1,9 @@
+[tool.pyright]
+venvPath = "backend"
+venv = ".venv"
+extraPaths = ["backend"]
+pythonVersion = "3.13"
+
+[tool.pyrefly]
+pythonPath = "backend/.venv/Scripts/python.exe"
+searchPaths = ["backend", "backend/.venv/Lib/site-packages"]
