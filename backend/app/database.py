@@ -9,6 +9,8 @@ if database_url.startswith("postgresql://"):
     database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
 if "sslmode=require" in database_url:
     database_url = database_url.replace("sslmode=require", "ssl=require")
+# Strip channel_binding which asyncpg does not accept as a URL parameter
+database_url = database_url.replace("&channel_binding=require", "").replace("channel_binding=require&", "").replace("channel_binding=require", "")
 
 engine = create_async_engine(
     database_url,
