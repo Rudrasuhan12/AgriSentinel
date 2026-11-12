@@ -257,16 +257,29 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onExploreClick }) => {
                       {/* Inner solid node */}
                       <circle cx={pt.cx} cy={pt.cy} r="3.5" fill="#b8ee3b" />
                       {/* Pulsing outer aura */}
-                      <motion.circle
+                      <circle
                         cx={pt.cx}
                         cy={pt.cy}
                         r="3.5"
                         stroke="#b8ee3b"
                         strokeWidth="1.2"
                         fill="none"
-                        animate={{ r: [3.5, 9, 3.5], opacity: [0.9, 0, 0.9] }}
-                        transition={{ duration: 2.4, delay: pt.delay, repeat: Infinity, ease: "easeOut" }}
-                      />
+                      >
+                        <animate
+                          attributeName="r"
+                          values="3.5; 9; 3.5"
+                          dur="2.4s"
+                          begin={`${pt.delay}s`}
+                          repeatCount="indefinite"
+                        />
+                        <animate
+                          attributeName="opacity"
+                          values="0.9; 0; 0.9"
+                          dur="2.4s"
+                          begin={`${pt.delay}s`}
+                          repeatCount="indefinite"
+                        />
+                      </circle>
                     </g>
                   ))}
 

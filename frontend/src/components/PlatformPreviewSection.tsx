@@ -206,16 +206,29 @@ export const PlatformPreviewSection: React.FC = () => {
                       ].map((v, i) => (
                         <g key={i}>
                           <circle cx={v.cx} cy={v.cy} r="4" fill="#b8ee3b" />
-                          <motion.circle
+                          <circle
                             cx={v.cx}
                             cy={v.cy}
                             r="4"
                             stroke="#b8ee3b"
                             strokeWidth="1.2"
                             fill="none"
-                            animate={{ r: [4, 11, 4], opacity: [0.9, 0, 0.9] }}
-                            transition={{ duration: 2.2, delay: v.delay, repeat: Infinity, ease: "easeOut" }}
-                          />
+                          >
+                            <animate
+                              attributeName="r"
+                              values="4; 11; 4"
+                              dur="2.2s"
+                              begin={`${v.delay}s`}
+                              repeatCount="indefinite"
+                            />
+                            <animate
+                              attributeName="opacity"
+                              values="0.9; 0; 0.9"
+                              dur="2.2s"
+                              begin={`${v.delay}s`}
+                              repeatCount="indefinite"
+                            />
+                          </circle>
                         </g>
                       ))}
 

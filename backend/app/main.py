@@ -39,17 +39,17 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
-# Secure CORS Middleware
+# Secure CORS Middleware allowing localhost and any Vercel/Render deployed domains
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
-    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1|.*\.vercel\.app|.*\.onrender\.com)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
-# Include Routers
+# Include Routers with standard /api prefix
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(farmer_router)
@@ -61,6 +61,22 @@ app.include_router(surveys_router)
 app.include_router(processing_router)
 app.include_router(heaps_router)
 app.include_router(yields_router)
+
+# Mount alias for /auth routes directly so both /api/auth/* and /auth/* are served
+from fastapi import APIRouter
+auth_alias = APIRouter(prefix="/auth", tags=["Auth Aliases"])
+for route in auth_router.routes:
+    if hasattr(route, "endpoint") and hasattr(route, "methods"):
+        alias_path = route.path.replace("/api/auth", "")
+        auth_alias.add_api_route(
+            alias_path,
+            route.endpoint,
+            methods=route.methods,
+            response_model=getattr(route, "response_model", None),
+            status_code=getattr(route, "status_code", 200),
+            include_in_schema=False
+        )
+app.include_router(auth_alias)
 
 
 @app.get("", tags=["Root"], include_in_schema=False)

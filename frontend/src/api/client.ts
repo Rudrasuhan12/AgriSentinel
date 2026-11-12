@@ -1,6 +1,31 @@
 // Safely access Vite environment variables with fallback to development proxy
-const API_BASE_URL: string = 
+const rawBase: string = 
   ((import.meta as any).env?.VITE_API_URL as string) || "/api";
+
+export function buildApiUrl(endpoint: string): string {
+  // Normalize base: strip trailing slashes
+  let base = (rawBase || "/api").trim().replace(/\/+$/, "");
+  
+  // If base does not end with /api, ensure /api is included for backend routers
+  if (!base.endsWith("/api")) {
+    base = `${base}/api`;
+  }
+  
+  // Normalize endpoint: ensure starts with /
+  let clean = endpoint.trim();
+  if (!clean.startsWith("/")) {
+    clean = `/${clean}`;
+  }
+  
+  // If endpoint already starts with /api/, strip that prefix to avoid /api/api
+  if (clean.startsWith("/api/")) {
+    clean = clean.slice(4);
+  } else if (clean === "/api") {
+    clean = "";
+  }
+  
+  return `${base}${clean}`;
+}
 
 export async function apiRequest<T = any>(
   endpoint: string,
@@ -19,10 +44,9 @@ export async function apiRequest<T = any>(
     headers["Authorization"] = `Bearer ${token}`;
   }
 
-  // Normalize endpoint to prevent double /api
-  const cleanEndpoint = endpoint.startsWith("/api") ? endpoint.slice(4) : endpoint;
+  const fullUrl = buildApiUrl(endpoint);
 
-  const response = await fetch(`${API_BASE_URL}${cleanEndpoint}`, {
+  const response = await fetch(fullUrl, {
     ...options,
     headers,
   });
@@ -31,7 +55,7 @@ export async function apiRequest<T = any>(
     // If unauthorized and not already retrying, attempt silent auto-reauth for developer/farmer session
     if (response.status === 401 && !(options.headers as any)?.['X-Retry-Auth']) {
       try {
-        const loginRes = await fetch(`${API_BASE_URL}/auth/login`, {
+        const loginRes = await fetch(buildApiUrl('/auth/login'), {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -50,7 +74,7 @@ export async function apiRequest<T = any>(
               'Authorization': `Bearer ${loginData.access_token}`,
               'X-Retry-Auth': 'true',
             };
-            const retryRes = await fetch(`${API_BASE_URL}${cleanEndpoint}`, {
+            const retryRes = await fetch(fullUrl, {
               ...options,
               headers: retryHeaders,
             });

@@ -104,25 +104,29 @@ export const AuthUavShowcase: React.FC = () => {
           ].map((vertex, i) => (
             <g key={i}>
               {/* Expanding Radar Ripple Ring */}
-              <motion.circle
+              <circle
                 cx={vertex.cx}
                 cy={vertex.cy}
                 r="4.5"
                 fill="none"
                 stroke="#facc15"
                 strokeWidth="1.5"
-                animate={{
-                  r: [4.5, 14, 4.5],
-                  opacity: [0.9, 0, 0.9],
-                  strokeWidth: [2, 0.5, 2]
-                }}
-                transition={{
-                  duration: 2.4,
-                  repeat: Infinity,
-                  ease: "easeOut",
-                  delay: i * 0.4
-                }}
-              />
+              >
+                <animate
+                  attributeName="r"
+                  values="4.5; 14; 4.5"
+                  dur="2.4s"
+                  begin={`${i * 0.4}s`}
+                  repeatCount="indefinite"
+                />
+                <animate
+                  attributeName="opacity"
+                  values="0.9; 0; 0.9"
+                  dur="2.4s"
+                  begin={`${i * 0.4}s`}
+                  repeatCount="indefinite"
+                />
+              </circle>
               {/* Solid Vertex Center Dot */}
               <circle 
                 cx={vertex.cx} 

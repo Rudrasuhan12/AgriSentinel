@@ -113,16 +113,29 @@ export const AuthVisualPanel: React.FC = () => {
             ].map((node, i) => (
               <g key={i}>
                 <circle cx={node.cx} cy={node.cy} r="4" fill="#a3e635" />
-                <motion.circle
+                <circle
                   cx={node.cx}
                   cy={node.cy}
                   r="4"
                   stroke="#fbbf24"
                   strokeWidth="1.5"
                   fill="none"
-                  animate={{ r: [4, 11, 4], opacity: [0.9, 0, 0.9] }}
-                  transition={{ duration: 2.2, delay: i * 0.4, repeat: Infinity, ease: "easeOut" }}
-                />
+                >
+                  <animate
+                    attributeName="r"
+                    values="4; 11; 4"
+                    dur="2.2s"
+                    begin={`${i * 0.4}s`}
+                    repeatCount="indefinite"
+                  />
+                  <animate
+                    attributeName="opacity"
+                    values="0.9; 0; 0.9"
+                    dur="2.2s"
+                    begin={`${i * 0.4}s`}
+                    repeatCount="indefinite"
+                  />
+                </circle>
               </g>
             ))}
 
