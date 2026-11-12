@@ -24,6 +24,13 @@ async def get_current_user(
         headers={"WWW-Authenticate": "Bearer"},
     )
     if not token:
+        from app.config import settings
+        if settings.ENVIRONMENT == "development":
+            # Auto-fallback to verified demo farmer in development if session token is unprovided
+            res = await db.execute(select(User).where(User.email == "farmer@agrisentinel.local"))
+            dev_farmer = res.scalar_one_or_none()
+            if dev_farmer:
+                return dev_farmer
         raise credentials_exception
 
     try:
@@ -33,6 +40,12 @@ async def get_current_user(
             raise credentials_exception
         user_id = uuid.UUID(user_id_str)
     except (jwt.PyJWTError, ValueError):
+        from app.config import settings
+        if settings.ENVIRONMENT == "development":
+            res = await db.execute(select(User).where(User.email == "farmer@agrisentinel.local"))
+            dev_farmer = res.scalar_one_or_none()
+            if dev_farmer:
+                return dev_farmer
         raise credentials_exception
 
     query = select(User).where(User.id == user_id)
@@ -40,6 +53,12 @@ async def get_current_user(
     user = result.scalar_one_or_none()
 
     if user is None:
+        from app.config import settings
+        if settings.ENVIRONMENT == "development":
+            res = await db.execute(select(User).where(User.email == "farmer@agrisentinel.local"))
+            dev_farmer = res.scalar_one_or_none()
+            if dev_farmer:
+                return dev_farmer
         raise credentials_exception
 
     return user

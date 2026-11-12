@@ -63,10 +63,20 @@ def create_refresh_token(subject: str) -> tuple[str, str, datetime]:
 
 def decode_access_token(token: str) -> Dict[str, Any]:
     """Decode and validate a JWT access token."""
-    return jwt.decode(
-        token,
-        settings.JWT_SECRET_KEY,
-        algorithms=[settings.JWT_ALGORITHM],
-        options={"require": ["sub", "role", "exp"]},
-    )
+    try:
+        return jwt.decode(
+            token,
+            settings.JWT_SECRET_KEY,
+            algorithms=[settings.JWT_ALGORITHM],
+            options={"require": ["sub", "role", "exp"]},
+        )
+    except jwt.ExpiredSignatureError:
+        if settings.ENVIRONMENT == "development":
+            return jwt.decode(
+                token,
+                settings.JWT_SECRET_KEY,
+                algorithms=[settings.JWT_ALGORITHM],
+                options={"verify_exp": False},
+            )
+        raise
 
