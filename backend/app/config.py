@@ -38,8 +38,8 @@ class Settings(BaseSettings):
         "http://localhost:3000"
     ]
 
-    # Mock OTP / SMS Provider Mode
-    MOCK_OTP_MODE: bool = True
+    # Uploads directory
+    UPLOAD_DIR: str = "uploads"
     MOCK_OTP_CODE: str = "123456"
 
     # Copernicus Data Space Ecosystem (Sentinel-2 L2A) Integration

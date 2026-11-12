@@ -10,6 +10,11 @@ from app.routers.farmer import router as farmer_router
 from app.routers.cadastral import router as cadastral_router
 from app.routers.administrative import router as administrative_router
 from app.routers.document import router as document_router
+from app.routers.fields import router as fields_router
+from app.routers.surveys import router as surveys_router
+from app.routers.processing import router as processing_router
+from app.routers.heaps import router as heaps_router
+from app.routers.yields import router as yields_router
 
 
 @asynccontextmanager
@@ -51,6 +56,11 @@ app.include_router(farmer_router)
 app.include_router(cadastral_router)
 app.include_router(administrative_router)
 app.include_router(document_router)
+app.include_router(fields_router)
+app.include_router(surveys_router)
+app.include_router(processing_router)
+app.include_router(heaps_router)
+app.include_router(yields_router)
 
 
 @app.get("", tags=["Root"], include_in_schema=False)

@@ -1,0 +1,37 @@
+# AgriSentinel Agricultural Image Processing Pipeline Configuration
+# Model: Agricultural Field & Paddy Canopy Segmentation U-Net
+pipeline_name: "agrisentinel-paddy-segmentation"
+version: "1.2.0"
+
+data:
+  dataset_id: "DS-PADDY-DOCTOR-2022"
+  image_width: 256
+  image_height: 256
+  channels: 3
+  split_strategy: "group_by_field_id" # Prevents data leakage between image patches
+  train_ratio: 0.70
+  val_ratio: 0.15
+  test_ratio: 0.15
+  random_seed: 42
+
+augmentation:
+  random_horizontal_flip: true
+  random_vertical_flip: true
+  random_rotation_degrees: 15
+  color_jitter_brightness: 0.15
+  color_jitter_contrast: 0.15
+
+training:
+  batch_size: 16
+  epochs: 25
+  learning_rate: 0.0005
+  weight_decay: 0.00001
+  loss_function: "combined_bce_dice"
+  bce_weight: 0.5
+  dice_weight: 0.5
+  early_stopping_patience: 5
+
+paths:
+  weights_dir: "app/ml/weights"
+  output_model_file: "app/ml/weights/paddy_segmentation_unet.npz"
+  evaluation_report_file: "app/ml/evaluation_report.json"

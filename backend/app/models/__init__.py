@@ -5,7 +5,7 @@ from app.models.session import UserSession
 from app.models.consent import ConsentRecord
 from app.models.parcel import FarmerParcel, ParcelVerificationStatus
 from app.models.satellite import SatelliteObservation, SatelliteProcessingStatus
-from app.models.survey import UAVSurvey, FlightStatus
+from app.models.survey import UAVSurvey, FlightStatus, SurveyImage, ImageSourceType
 from app.models.reconstruction import HeapReconstruction
 from app.models.certificate import YieldCertificate, CertificateStatus
 from app.models.notification import FarmerNotification, NotificationType
@@ -39,6 +39,8 @@ __all__ = [
     "SatelliteProcessingStatus",
     "UAVSurvey",
     "FlightStatus",
+    "SurveyImage",
+    "ImageSourceType",
     "HeapReconstruction",
     "YieldCertificate",
     "CertificateStatus",

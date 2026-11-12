@@ -20,6 +20,13 @@ class FlightStatus(str, enum.Enum):
     CANCELLED = "CANCELLED"
 
 
+class ImageSourceType(str, enum.Enum):
+    PUBLIC_DATASET = "Public dataset"
+    USER_UPLOADED = "User uploaded"
+    UAV_CAPTURED = "UAV captured"
+    DEMONSTRATION_SAMPLE = "Demonstration sample"
+
+
 class UAVSurvey(Base):
     __tablename__ = "uav_surveys"
 
@@ -54,4 +61,36 @@ class UAVSurvey(Base):
     # Relationships
     parcel: Mapped[FarmerParcel] = relationship("FarmerParcel", back_populates="surveys")
     reconstruction: Mapped[Optional[HeapReconstruction]] = relationship("HeapReconstruction", back_populates="survey", uselist=False)
+    images: Mapped[list[SurveyImage]] = relationship("SurveyImage", back_populates="survey", cascade="all, delete-orphan")
+
+
+class SurveyImage(Base):
+    __tablename__ = "survey_images"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    survey_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("uav_surveys.id", ondelete="CASCADE"), index=True
+    )
+    filename: Mapped[str] = mapped_column(String(255), nullable=False)
+    file_path: Mapped[str] = mapped_column(Text, nullable=False)
+    file_url: Mapped[str] = mapped_column(Text, nullable=False)
+    source_type: Mapped[ImageSourceType] = mapped_column(
+        Enum(ImageSourceType, name="image_source_type_enum"),
+        default=ImageSourceType.USER_UPLOADED,
+        index=True
+    )
+    resolution_width: Mapped[int] = mapped_column(Float, default=0)
+    resolution_height: Mapped[int] = mapped_column(Float, default=0)
+    blur_score: Mapped[float] = mapped_column(Float, default=0.0)
+    is_valid: Mapped[bool] = mapped_column(default=True)
+    file_size_bytes: Mapped[int] = mapped_column(Float, default=0)
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
+    )
+
+    survey: Mapped[UAVSurvey] = relationship("UAVSurvey", back_populates="images")
+
 

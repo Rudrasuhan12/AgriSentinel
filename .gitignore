@@ -49,6 +49,8 @@ venv/
 env/
 ENV/
 backend/uploads/
+backend/app/ml/datasets/*/
+!backend/app/ml/datasets/dataset_registry.json
 env.bak/
 venv.bak/
 pip-log.txt

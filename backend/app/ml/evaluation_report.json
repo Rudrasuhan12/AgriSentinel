@@ -1,0 +1,17 @@
+{
+  "pipeline_name": "agrisentinel-paddy-segmentation",
+  "model_architecture": "Paddy Canopy U-Net",
+  "evaluation_timestamp": "2026-11-12T18:01:31.310857+00:00",
+  "dataset_evaluated": "DS-PADDY-DOCTOR-2022",
+  "evaluation_split": "Held-Out Test Set (Unseen Agricultural Fields)",
+  "test_sample_count": 15,
+  "metrics": {
+    "precision": 0.9997,
+    "recall": 0.977,
+    "f1_score": 0.9882,
+    "intersection_over_union_iou": 0.9768,
+    "dice_coefficient": 0.9882
+  },
+  "performance_summary": "The U-Net model achieved an IoU of 97.68% and Dice Coefficient of 98.82% on held-out paddy test plots, with Precision of 99.97% and Recall of 97.70%.",
+  "scientific_disclaimer": "This segmentation model is strictly designed for paddy canopy coverage delineation and field stress segmentation. It does NOT estimate 3D heap volume or paddy mass; volume estimation is executed by the photogrammetry pipeline."
+}
