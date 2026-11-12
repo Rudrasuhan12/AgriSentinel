@@ -11,6 +11,7 @@ from app.models.certificate import YieldCertificate, CertificateStatus
 from app.models.notification import FarmerNotification, NotificationType
 from app.models.support import SupportContact
 from app.models.cadastral import CadastralParcel
+from app.models.document import PattaDocument, DocumentProcessingStatus
 from app.models.administrative import (
     AdministrativeDistrict,
     AdministrativeTahasil,
@@ -29,6 +30,8 @@ __all__ = [
     "FarmerParcel",
     "ParcelVerificationStatus",
     "CadastralParcel",
+    "PattaDocument",
+    "DocumentProcessingStatus",
     "AdministrativeDistrict",
     "AdministrativeTahasil",
     "AdministrativeVillage",

@@ -249,3 +249,4 @@ async def seed_administrative_data():
 
 if __name__ == "__main__":
     asyncio.run(seed_administrative_data())
+

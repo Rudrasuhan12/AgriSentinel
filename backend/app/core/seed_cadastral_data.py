@@ -11,6 +11,28 @@ CADASTRAL_DATASETS = [
         "state_code": "OD",
         "district_name": "Cuttack",
         "district_code": "CUT",
+        "tahasil_name": "Cuttack",
+        "tahasil_code": "CTC",
+        "village_name": "Cuttack Sahar Unit No. 30, Andarpur",
+        "village_code": "AND",
+        "khata_number": "299/611",
+        "plot_number": "640/2536",
+        "recorded_area_acres": 0.0440,
+        "coordinates": [
+            [85.87520, 20.46850],
+            [85.87710, 20.46890],
+            [85.87740, 20.46770],
+            [85.87550, 20.46730],
+            [85.87520, 20.46850]
+        ],
+        "source": "Odisha Cadastral Survey Dataset (Bhulekh Records - Schedule I Form 39-A)",
+        "source_reference": "REV-CAD-OD-CUT-CTC-640-2536",
+        "verification_status": "OFFICIAL_CADASTRAL"
+    },
+    {
+        "state_code": "OD",
+        "district_name": "Cuttack",
+        "district_code": "CUT",
         "tahasil_name": "Baranga",
         "tahasil_code": "BRG",
         "village_name": "Mundali",

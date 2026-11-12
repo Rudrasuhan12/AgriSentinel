@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { api } from '../../api/client';
 import { AdministrativeHierarchySelector } from './AdministrativeHierarchySelector';
+import { PattaUploadSection, ExtractedPattaData } from './PattaUploadSection';
 
 interface FieldRegistrationMapModalProps {
   isOpen: boolean;
@@ -233,11 +234,23 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
   };
 
   // 2. Cadastral Spatial Lookup Function
-  const handleCadastralLookup = async () => {
+  const handleCadastralLookup = async (overrideParams?: {
+    district?: string;
+    tahasil?: string;
+    village?: string;
+    khata_number?: string;
+    plot_number?: string;
+  }) => {
     setError(null);
     setLookupMessage(null);
 
-    if (!plotNumber.trim()) {
+    const targetPlot = overrideParams?.plot_number !== undefined ? overrideParams.plot_number : plotNumber;
+    const targetKhata = overrideParams?.khata_number !== undefined ? overrideParams.khata_number : khataNumber;
+    const targetDistrict = overrideParams?.district !== undefined ? overrideParams.district : district;
+    const targetTahasil = overrideParams?.tahasil !== undefined ? overrideParams.tahasil : subDistrict;
+    const targetVillage = overrideParams?.village !== undefined ? overrideParams.village : village;
+
+    if (!targetPlot.trim()) {
       setError('Please provide a Plot / Dag Number for cadastral resolution.');
       return;
     }
@@ -248,11 +261,11 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
 
       const response = await api.post<CadastralLookupResult>('/api/cadastral/lookup', {
         state,
-        district,
-        tahasil: subDistrict,
-        village,
-        khata_number: khataNumber.trim() || '299/611',
-        plot_number: plotNumber.trim(),
+        district: targetDistrict,
+        tahasil: targetTahasil,
+        village: targetVillage,
+        khata_number: targetKhata.trim() || '299/611',
+        plot_number: targetPlot.trim(),
       });
 
       if (response.success && response.parcel) {
@@ -361,6 +374,37 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
       setIsOfficialCadastral(false);
     } finally {
       setLookupLoading(false);
+    }
+  };
+
+  // 2b. Apply AI Extracted Details from Patta / ROR Document
+  const handleApplyPattaDetails = (details: ExtractedPattaData, shouldAutoLocate: boolean = false) => {
+    if (details.district) setDistrict(details.district);
+    if (details.tahasil) setSubDistrict(details.tahasil);
+    if (details.village) setVillage(details.village);
+    if (details.khata_number) setKhataNumber(details.khata_number);
+    if (details.plot_number) setPlotNumber(details.plot_number);
+    if (details.area_acres) {
+      setEnteredArea(details.area_acres.toString());
+      setOfficialRecordedArea(details.area_acres);
+    }
+    if (details.land_classification) {
+      const cls = details.land_classification.toLowerCase();
+      if (cls.includes('paddy') || cls.includes('swarna')) {
+        setCrop('Paddy (Swarna MTU)');
+      } else {
+        setCrop(`Paddy (${details.land_classification})`);
+      }
+    }
+
+    if (shouldAutoLocate && details.plot_number) {
+      handleCadastralLookup({
+        district: details.district || district,
+        tahasil: details.tahasil || subDistrict,
+        village: details.village || village,
+        khata_number: details.khata_number || khataNumber,
+        plot_number: details.plot_number,
+      });
     }
   };
 
@@ -573,6 +617,9 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
           {/* Left Column: Form Details & Cadastral Controls */}
           <form onSubmit={handleSubmit} className="lg:col-span-5 p-5 space-y-3.5 text-xs border-r border-[#E2E9E4] bg-white overflow-y-auto">
             
+            {/* Step 0: Upload Patta / ROR with AI Auto-Fill */}
+            <PattaUploadSection onApplyExtractedDetails={handleApplyPattaDetails} />
+
             {/* Step 1: Database-Backed Administrative Hierarchy Selector (All 30 Odisha Districts) */}
             <AdministrativeHierarchySelector
               selectedDistrict={district}
@@ -623,7 +670,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
               {/* Dedicated Locate Land Parcel Button */}
               <button
                 type="button"
-                onClick={handleCadastralLookup}
+                onClick={() => handleCadastralLookup()}
                 disabled={lookupLoading || !plotNumber.trim()}
                 className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#008C45] to-[#006B36] hover:from-[#007a3c] hover:to-[#005c2e] text-white font-semibold flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer transition-all"
               >

@@ -32,3 +32,4 @@ class VillageItemResponse(BaseModel):
 class AdministrativeHierarchySummary(BaseModel):
     total_districts: int
     districts: List[DistrictItemResponse]
+

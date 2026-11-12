@@ -8,8 +8,10 @@ export async function apiRequest<T = any>(
 ): Promise<T> {
   const token = localStorage.getItem("agrisentinel_token") || sessionStorage.getItem("agrisentinel_token");
 
+  const isFormData = typeof FormData !== 'undefined' && options.body instanceof FormData;
+
   const headers: Record<string, string> = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers as Record<string, string> || {}),
   };
 
@@ -42,11 +44,19 @@ export async function apiRequest<T = any>(
 export const api = {
   get: <T = any>(endpoint: string, options?: RequestInit) => 
     apiRequest<T>(endpoint, { ...options, method: 'GET' }),
-  post: <T = any>(endpoint: string, body?: any, options?: RequestInit) => 
-    apiRequest<T>(endpoint, { 
+  post: <T = any>(endpoint: string, body?: any, options?: RequestInit) => {
+    const isFormData = typeof FormData !== 'undefined' && body instanceof FormData;
+    return apiRequest<T>(endpoint, { 
       ...options, 
       method: 'POST', 
-      body: body ? JSON.stringify(body) : undefined 
+      body: isFormData ? body : (body ? JSON.stringify(body) : undefined) 
+    });
+  },
+  upload: <T = any>(endpoint: string, formData: FormData, options?: RequestInit) => 
+    apiRequest<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: formData,
     }),
   put: <T = any>(endpoint: string, body?: any, options?: RequestInit) => 
     apiRequest<T>(endpoint, { 

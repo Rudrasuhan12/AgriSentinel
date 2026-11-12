@@ -155,6 +155,32 @@ async def lookup_cadastral_parcel(
     rows = result.fetchall()
 
     if not rows:
+        # Flexible fallback matching across mouza variations or matching by plot & khata
+        fallback_query = text("""
+            SELECT 
+                id, state_code, district_name, tahasil_name, village_name,
+                khata_number, plot_number, recorded_area_acres,
+                ROUND(CAST(ST_Area(geom::geography) * 0.000247105 AS numeric), 2) as calc_area_acres,
+                ST_AsGeoJSON(geom) as geom_json,
+                ST_XMin(geom) as min_lon,
+                ST_YMin(geom) as min_lat,
+                ST_XMax(geom) as max_lon,
+                ST_YMax(geom) as max_lat,
+                source, source_reference, verification_status
+            FROM cadastral_parcels
+            WHERE district_name ILIKE :district
+              AND (plot_number ILIKE :plot OR plot_number = :plot)
+              AND (:village ILIKE '%' || village_name || '%' OR village_name ILIKE '%' || :village || '%' OR khata_number = :khata)
+        """)
+        fb_result = await db.execute(fallback_query, {
+            "district": district,
+            "plot": plot,
+            "village": village,
+            "khata": khata
+        })
+        rows = fb_result.fetchall()
+
+    if not rows:
         return CadastralLookupResponse(
             success=False,
             message="No cadastral polygon found for the supplied land-record details. You can manually digitize your field boundary or submit it for cadastral data verification.",

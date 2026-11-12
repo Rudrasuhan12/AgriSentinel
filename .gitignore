@@ -48,6 +48,7 @@ venv/
 .venv/
 env/
 ENV/
+backend/uploads/
 env.bak/
 venv.bak/
 pip-log.txt

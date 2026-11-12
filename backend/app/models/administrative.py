@@ -72,3 +72,4 @@ class AdministrativeVillage(Base):
         Index("idx_admin_tahasil_village", "tahasil_name", "village_name"),
         Index("idx_admin_dist_tah_vil", "district_name", "tahasil_name", "village_name"),
     )
+
