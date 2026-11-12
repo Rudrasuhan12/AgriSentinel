@@ -24,3 +24,4 @@ class OfficialRequestDetailResponse(BaseModel):
     reviewed_at: Optional[str] = None
     reviewed_by: Optional[str] = None
     rejection_reason: Optional[str] = None
+

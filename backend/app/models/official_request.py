@@ -1,10 +1,15 @@
+from __future__ import annotations
 import uuid
 import enum
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import String, Text, DateTime, Enum, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class ApprovalStatus(str, enum.Enum):
@@ -25,11 +30,11 @@ class OfficialAccessRequest(Base):
     department: Mapped[str] = mapped_column(String(200), nullable=False)
     organization: Mapped[str] = mapped_column(String(200), nullable=False)
     designation: Mapped[str] = mapped_column(String(150), nullable=False)
-    employee_id: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    employee_id: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     requested_state: Mapped[str] = mapped_column(String(100), nullable=False)
     requested_district: Mapped[str] = mapped_column(String(100), nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
-    invitation_code: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    invitation_code: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
 
     approval_status: Mapped[ApprovalStatus] = mapped_column(
         Enum(ApprovalStatus, name="approval_status_enum"),
@@ -37,18 +42,18 @@ class OfficialAccessRequest(Base):
         nullable=False,
         index=True
     )
-    reviewed_by: Mapped[uuid.UUID | None] = mapped_column(
+    reviewed_by: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True
     )
-    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
-    rejection_reason: Mapped[str | None] = mapped_column(Text, nullable=True)
+    reviewed_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
+    rejection_reason: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
     # Relationships
-    user: Mapped["User"] = relationship(
+    user: Mapped[User] = relationship(
         "User", back_populates="official_request", foreign_keys=[user_id]
     )
-    reviewer: Mapped["User | None"] = relationship("User", foreign_keys=[reviewed_by])
+    reviewer: Mapped[Optional[User]] = relationship("User", foreign_keys=[reviewed_by])

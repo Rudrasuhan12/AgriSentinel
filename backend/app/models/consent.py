@@ -1,9 +1,14 @@
+from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING
 from sqlalchemy import String, Boolean, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class ConsentRecord(Base):
@@ -22,4 +27,4 @@ class ConsentRecord(Base):
         DateTime(timezone=True), default=lambda: datetime.now(timezone.utc)
     )
 
-    user: Mapped["User"] = relationship("User", back_populates="consent_records")
+    user: Mapped[User] = relationship("User", back_populates="consent_records")

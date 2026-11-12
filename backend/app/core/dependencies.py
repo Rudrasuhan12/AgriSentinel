@@ -80,3 +80,4 @@ def require_role(*allowed_roles: UserRole) -> Callable:
         return current_user
 
     return role_checker
+

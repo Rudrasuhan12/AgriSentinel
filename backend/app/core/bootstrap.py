@@ -52,3 +52,4 @@ if __name__ == "__main__":
         await bootstrap_initial_admin()
 
     asyncio.run(main())
+

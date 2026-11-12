@@ -53,3 +53,4 @@ async def health_check():
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT,
     }
+

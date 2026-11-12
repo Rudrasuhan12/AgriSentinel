@@ -1,10 +1,18 @@
+from __future__ import annotations
 import uuid
 import enum
 from datetime import datetime, timezone
-from sqlalchemy import String, Boolean, DateTime, Enum, ForeignKey
+from typing import TYPE_CHECKING, Optional, List
+from sqlalchemy import String, Boolean, DateTime, Enum
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.farmer_profile import FarmerProfile
+    from app.models.official_request import OfficialAccessRequest
+    from app.models.session import UserSession
+    from app.models.consent import ConsentRecord
 
 
 class UserRole(str, enum.Enum):
@@ -26,8 +34,8 @@ class User(Base):
     id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
-    email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True, index=True)
-    mobile_number: Mapped[str | None] = mapped_column(String(20), unique=True, nullable=True, index=True)
+    email: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True, index=True)
+    mobile_number: Mapped[Optional[str]] = mapped_column(String(20), unique=True, nullable=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
     role: Mapped[UserRole] = mapped_column(
         Enum(UserRole, name="user_role_enum"), nullable=False, default=UserRole.FARMER, index=True
@@ -49,22 +57,22 @@ class User(Base):
         default=lambda: datetime.now(timezone.utc),
         onupdate=lambda: datetime.now(timezone.utc)
     )
-    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    last_login_at: Mapped[Optional[datetime]] = mapped_column(DateTime(timezone=True), nullable=True)
 
     # Relationships
-    farmer_profile: Mapped["FarmerProfile | None"] = relationship(
+    farmer_profile: Mapped[Optional[FarmerProfile]] = relationship(
         "FarmerProfile", back_populates="user", uselist=False, cascade="all, delete-orphan"
     )
-    official_request: Mapped["OfficialAccessRequest | None"] = relationship(
+    official_request: Mapped[Optional[OfficialAccessRequest]] = relationship(
         "OfficialAccessRequest",
         back_populates="user",
         uselist=False,
         cascade="all, delete-orphan",
         foreign_keys="OfficialAccessRequest.user_id"
     )
-    sessions: Mapped[list["UserSession"]] = relationship(
+    sessions: Mapped[List[UserSession]] = relationship(
         "UserSession", back_populates="user", cascade="all, delete-orphan"
     )
-    consent_records: Mapped[list["ConsentRecord"]] = relationship(
+    consent_records: Mapped[List[ConsentRecord]] = relationship(
         "ConsentRecord", back_populates="user", cascade="all, delete-orphan"
     )

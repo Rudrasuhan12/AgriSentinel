@@ -92,3 +92,4 @@ class UserResponse(BaseModel):
     created_at: str
     display_name: str
     profile: Optional[Dict[str, Any]] = None
+

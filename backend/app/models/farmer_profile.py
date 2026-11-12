@@ -1,9 +1,14 @@
+from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Optional
 from sqlalchemy import String, Float, Integer, DateTime, ForeignKey
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from app.database import Base
+
+if TYPE_CHECKING:
+    from app.models.user import User
 
 
 class FarmerProfile(Base):
@@ -23,14 +28,14 @@ class FarmerProfile(Base):
     district: Mapped[str] = mapped_column(String(100), nullable=False, index=True)
     sub_district: Mapped[str] = mapped_column(String(100), nullable=False)
     village: Mapped[str] = mapped_column(String(100), nullable=False)
-    gram_panchayat: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    gram_panchayat: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     pin_code: Mapped[str] = mapped_column(String(20), nullable=False)
 
     # Agricultural Metrics
     primary_crop: Mapped[str] = mapped_column(String(100), default="Paddy (Swarna)")
     land_ownership_type: Mapped[str] = mapped_column(String(50), default="Owner")
     approximate_land_area: Mapped[float] = mapped_column(Float, default=1.0)
-    farming_category: Mapped[str | None] = mapped_column(String(50), nullable=True) # e.g. Small, Marginal, Medium
+    farming_category: Mapped[Optional[str]] = mapped_column(String(50), nullable=True) # e.g. Small, Marginal, Medium
     number_of_fields: Mapped[int] = mapped_column(Integer, default=1)
 
     created_at: Mapped[datetime] = mapped_column(
@@ -38,4 +43,4 @@ class FarmerProfile(Base):
     )
 
     # Relationship back to User
-    user: Mapped["User"] = relationship("User", back_populates="farmer_profile")
+    user: Mapped[User] = relationship("User", back_populates="farmer_profile")
