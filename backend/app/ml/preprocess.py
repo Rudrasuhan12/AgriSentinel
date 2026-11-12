@@ -31,8 +31,12 @@ def create_canopy_mask_otsu(image_bgr: np.ndarray) -> np.ndarray:
     Used for creating initial ground-truth masks on agricultural field imagery.
     """
     exg = compute_excess_green_index(image_bgr)
-    # Scale ExG to 0-255
-    exg_scaled = cv2.normalize(exg, None, 0, 255, cv2.NORM_MINMAX).astype(np.uint8)
+    # Scale ExG to 0-255 using pure NumPy (type-safe and robust)
+    exg_min, exg_max = float(np.min(exg)), float(np.max(exg))
+    if exg_max > exg_min:
+        exg_scaled = ((exg - exg_min) / (exg_max - exg_min) * 255.0).astype(np.uint8)
+    else:
+        exg_scaled = np.zeros_like(exg, dtype=np.uint8)
     # Apply Otsu automatic thresholding
     _, mask = cv2.threshold(exg_scaled, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
     # Morphological opening to reduce salt-and-pepper sensor noise
@@ -77,16 +81,25 @@ def split_dataset_by_field_group(
     """
     try:
         from sklearn.model_selection import GroupShuffleSplit
+        if len(set(field_groups)) < 3:
+            raise ValueError("Too few groups for multi-way GroupShuffleSplit")
+
+        x_arr = np.array(sample_ids)
+        groups_arr = np.array(field_groups)
         gss = GroupShuffleSplit(n_splits=1, train_size=train_size, random_state=random_state)
-        train_idx, temp_idx = next(gss.split(sample_ids, groups=field_groups))
+        train_idx, temp_idx = next(gss.split(x_arr, groups=groups_arr))
 
         # Split remaining into val and test
         val_ratio_in_temp = val_size / (1.0 - train_size)
         temp_ids = [sample_ids[i] for i in temp_idx]
         temp_groups = [field_groups[i] for i in temp_idx]
+        if len(set(temp_groups)) < 2:
+            raise ValueError("Too few groups in validation/test slice")
 
         gss_val = GroupShuffleSplit(n_splits=1, train_size=val_ratio_in_temp, random_state=random_state)
-        val_sub_idx, test_sub_idx = next(gss_val.split(temp_ids, groups=temp_groups))
+        temp_x_arr = np.array(temp_ids)
+        temp_groups_arr = np.array(temp_groups)
+        val_sub_idx, test_sub_idx = next(gss_val.split(temp_x_arr, groups=temp_groups_arr))
 
         val_idx = temp_idx[val_sub_idx]
         test_idx = temp_idx[test_sub_idx]
@@ -96,7 +109,7 @@ def split_dataset_by_field_group(
             "val": val_idx.tolist(),
             "test": test_idx.tolist()
         }
-    except ImportError:
+    except (ImportError, ValueError, Exception):
         # Fallback to pure python/numpy group splitting if scikit-learn is not installed
         unique_groups = list(dict.fromkeys(field_groups))
         rng = np.random.default_rng(random_state)
