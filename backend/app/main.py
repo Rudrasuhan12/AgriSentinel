@@ -66,12 +66,15 @@ app.include_router(yields_router)
 from fastapi import APIRouter
 auth_alias = APIRouter(prefix="/auth", tags=["Auth Aliases"])
 for route in auth_router.routes:
-    if hasattr(route, "endpoint") and hasattr(route, "methods"):
-        alias_path = route.path.replace("/api/auth", "")
+    route_path = getattr(route, "path", None)
+    endpoint = getattr(route, "endpoint", None)
+    methods = getattr(route, "methods", None)
+    if route_path and endpoint and methods:
+        alias_path = route_path.replace("/api/auth", "")
         auth_alias.add_api_route(
             alias_path,
-            route.endpoint,
-            methods=route.methods,
+            endpoint,
+            methods=methods,
             response_model=getattr(route, "response_model", None),
             status_code=getattr(route, "status_code", 200),
             include_in_schema=False
