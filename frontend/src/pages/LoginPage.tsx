@@ -9,23 +9,96 @@ import {
   AlertCircle, 
   ShieldCheck,
   Loader2,
-  Scan,
-  ArrowLeft
+  ArrowLeft,
+  Sprout,
+  Building2,
+  Sparkles
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { AuthUavShowcase } from '../components/auth/AuthUavShowcase';
+
+type PersonaType = 'FARMER' | 'GOVERNMENT_OFFICIAL' | 'ADMIN';
+
+interface PersonaInfo {
+  id: PersonaType;
+  label: string;
+  badge: string;
+  title: string;
+  subtitle: string;
+  placeholder: string;
+  demoIdentifier: string;
+  demoPassword: string;
+  icon: React.ComponentType<{ className?: string }>;
+}
+
+const PERSONAS: PersonaInfo[] = [
+  {
+    id: 'FARMER',
+    label: 'Farmer',
+    badge: 'PRODUCER PORTAL',
+    title: 'Farmer Sign In',
+    subtitle: 'Access your registered field boundaries, UAV surveys, and harvest estimates.',
+    placeholder: 'Mobile (e.g., 9000000002) or email',
+    demoIdentifier: 'farmer@agrisentinel.local',
+    demoPassword: 'FarmerPass@2026',
+    icon: Sprout,
+  },
+  {
+    id: 'GOVERNMENT_OFFICIAL',
+    label: 'Official',
+    badge: 'GOVERNMENT DESK',
+    title: 'Official Access',
+    subtitle: 'Sign in with department credentials to review district cadastral assessments.',
+    placeholder: 'Official email (e.g., official@agrisentinel.local)',
+    demoIdentifier: 'official@agrisentinel.local',
+    demoPassword: 'OfficialPass@2026',
+    icon: Building2,
+  },
+  {
+    id: 'ADMIN',
+    label: 'Administrator',
+    badge: 'COMMAND CENTER',
+    title: 'Admin Console',
+    subtitle: 'Sign in with elevated privileges to manage security protocols and system logs.',
+    placeholder: 'Admin email (e.g., admin@agrisentinel.local)',
+    demoIdentifier: 'admin@agrisentinel.local',
+    demoPassword: 'AdminSecurePass@2026',
+    icon: ShieldCheck,
+  },
+];
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const [identifier, setIdentifier] = useState('');
-  const [password, setPassword] = useState('');
+  const [activePersona, setActivePersona] = useState<PersonaType>('ADMIN');
+  const [identifier, setIdentifier] = useState('admin@agrisentinel.local');
+  const [password, setPassword] = useState('AdminSecurePass@2026');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(false);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+  const activePersonaConfig = PERSONAS.find(p => p.id === activePersona) || PERSONAS[0];
+
+  const handleSelectPersona = (personaId: PersonaType) => {
+    setActivePersona(personaId);
+    setErrorMessage(null);
+    const targetPersona = PERSONAS.find(p => p.id === personaId);
+    if (targetPersona) {
+      setIdentifier(targetPersona.demoIdentifier);
+      setPassword(targetPersona.demoPassword);
+    }
+  };
+
+  const handleFillDemo = (personaId: PersonaType) => {
+    const targetPersona = PERSONAS.find(p => p.id === personaId);
+    if (targetPersona) {
+      setIdentifier(targetPersona.demoIdentifier);
+      setPassword(targetPersona.demoPassword);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -61,15 +134,10 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleAutofillAdmin = () => {
-    setIdentifier('admin@agrisentinel.local');
-    setPassword('AdminSecurePass@2026');
-  };
-
   return (
     <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-white text-[#0f172a] relative select-none">
       
-      {/* Soft Ambient Agritech Wave Gradients at Bottom Corners (as in reference) */}
+      {/* Soft Ambient Agritech Wave Gradients at Bottom Corners */}
       <div className="absolute -bottom-10 -left-10 w-[420px] h-[260px] pointer-events-none opacity-80 z-0">
         <svg viewBox="0 0 400 250" fill="none" className="w-full h-full">
           <path 
@@ -99,40 +167,31 @@ export const LoginPage: React.FC = () => {
             d="M 450 250 C 340 210, 260 230, 180 180 C 110 135, 70 90, -20 120 L -20 280 L 450 280 Z" 
             fill="url(#greenGradientBottomRight)" 
           />
-          <path 
-            d="M 450 250 C 320 190, 240 210, 140 150 C 70 110, 40 80, -30 70 L -30 280 L 450 280 Z" 
-            fill="url(#greenGradientBottomRight2)" 
-          />
           <defs>
             <linearGradient id="greenGradientBottomRight" x1="1" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#008C45" stopOpacity="0.16" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0.04" />
-            </linearGradient>
-            <linearGradient id="greenGradientBottomRight2" x1="1" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#008C45" stopOpacity="0.10" />
+              <stop offset="0%" stopColor="#008C45" stopOpacity="0.12" />
               <stop offset="100%" stopColor="#34d399" stopOpacity="0.02" />
             </linearGradient>
           </defs>
         </svg>
       </div>
 
-      {/* Top Header Bar */}
-      <header className="shrink-0 w-full px-6 sm:px-12 lg:px-16 py-4 flex items-center justify-between border-b border-gray-100 z-10">
-        {/* Brand Logo & Tag */}
-        <Link to="/" className="flex items-center gap-3 group focus:outline-none">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#008C45] to-[#005f2f] flex items-center justify-center text-white shadow-md shadow-emerald-700/20 group-hover:scale-105 transition-transform">
-            <Scan className="w-4 h-4 text-white" />
+      {/* Top Header Navigation Bar */}
+      <header className="w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 pt-4 pb-2 flex items-center justify-between z-10 shrink-0">
+        <Link to="/" className="flex items-center gap-3 group">
+          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#008C45] to-[#005c2d] flex items-center justify-center text-white shadow-md shadow-[#008C45]/20 group-hover:scale-105 transition-transform">
+            <span className="font-mono font-bold text-sm tracking-tight">AS</span>
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-lg text-[#0f172a] tracking-tight">
+              <span className="font-display font-extrabold text-lg sm:text-xl text-[#0f172a] tracking-tight">
                 Agri<span className="text-[#008C45]">Sentinel</span>
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#f0fdf4] border border-[#bbf7d0] text-[#008C45] font-semibold tracking-wider uppercase">
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-emerald-50 text-[#008C45] border border-emerald-200">
                 AGRI-AI
               </span>
             </div>
-            <span className="text-[10px] text-[#64748b] font-medium tracking-wide">
+            <span className="text-[10px] text-[#64748b] tracking-wider uppercase font-medium -mt-0.5">
               UAV & Geospatial Intelligence Platform
             </span>
           </div>
@@ -149,7 +208,7 @@ export const LoginPage: React.FC = () => {
       </header>
 
       {/* Main Two-Column Container - Fits in 100dvh without vertical scrolling on desktop */}
-      <main className="flex-1 min-h-0 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex items-center justify-center z-10 overflow-y-auto lg:overflow-hidden py-3 lg:py-0">
+      <main className="flex-1 min-h-0 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex items-center justify-center z-10 overflow-y-auto lg:overflow-hidden py-2 lg:py-0">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
           
           {/* LEFT SECTION (55% on desktop): Animated UAV/Geospatial Visual & Value Proposition */}
@@ -157,39 +216,65 @@ export const LoginPage: React.FC = () => {
             <AuthUavShowcase />
           </div>
 
-          {/* RIGHT SECTION (45% on desktop): Clean White Login Card */}
+          {/* RIGHT SECTION (45% on desktop): Clean Persona-Based Login Card */}
           <div className="lg:col-span-5 flex justify-center lg:justify-end w-full">
-            <div className="w-full max-w-[440px] bg-white border border-gray-200/90 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 relative">
+            <div className="w-full max-w-[430px] bg-white border border-gray-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-6 shadow-xl shadow-slate-200/50 relative">
               
-              {/* Secure Access Portal Badge */}
-              <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] text-[10px] font-mono font-bold uppercase tracking-wider mb-3">
-                <ShieldCheck className="w-3 h-3 text-[#008C45]" />
-                <span>SECURE ACCESS PORTAL</span>
+              {/* Persona Segmented Switcher */}
+              <div className="flex p-1 bg-slate-100/90 rounded-xl mb-3 border border-slate-200/80">
+                {PERSONAS.map((p) => {
+                  const Icon = p.icon;
+                  const isSelected = activePersona === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => handleSelectPersona(p.id)}
+                      className={`flex-1 py-1.5 px-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                        isSelected
+                          ? 'bg-white text-[#008C45] shadow-xs font-bold border border-slate-200/70'
+                          : 'text-slate-600 hover:text-slate-900'
+                      }`}
+                    >
+                      <Icon className={`w-3.5 h-3.5 ${isSelected ? 'text-[#008C45]' : 'text-slate-400'}`} />
+                      <span>{p.label}</span>
+                    </button>
+                  );
+                })}
               </div>
 
-              {/* Title & Prompt */}
-              <h2 className="font-display font-bold text-2xl sm:text-3xl text-[#0f172a] tracking-tight">
-                Welcome Back
+              {/* Dynamic Persona Badge & Heading */}
+              <div className="flex items-center justify-between mb-1.5">
+                <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] text-[10px] font-mono font-bold uppercase tracking-wider">
+                  <ShieldCheck className="w-3 h-3 text-[#008C45]" />
+                  <span>{activePersonaConfig.badge}</span>
+                </div>
+                <span className="text-[10px] font-mono text-slate-400">ROLE-AWARE</span>
+              </div>
+
+              {/* Title & Subtitle */}
+              <h2 className="font-display font-bold text-xl sm:text-2xl text-[#0f172a] tracking-tight">
+                {activePersonaConfig.title}
               </h2>
-              <p className="text-xs sm:text-sm text-[#64748b] mt-1 mb-5">
-                Sign in to continue to your authorized AgriSentinel account.
+              <p className="text-xs text-[#64748b] mt-0.5 mb-3 line-clamp-2 leading-relaxed">
+                {activePersonaConfig.subtitle}
               </p>
 
               {/* Error Message */}
               {errorMessage && (
-                <div className="mb-4 p-3 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5 text-xs text-red-700">
+                <div className="mb-2.5 p-2.5 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2 text-xs text-red-700">
                   <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                   <span>{errorMessage}</span>
                 </div>
               )}
 
               {/* Form */}
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-3">
                 
-                {/* Mobile Number or Email Field */}
+                {/* Identifier Field */}
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1.5">
-                    MOBILE NUMBER OR EMAIL ADDRESS
+                  <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
+                    MOBILE NUMBER OR EMAIL
                   </label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#008C45]">
@@ -199,23 +284,23 @@ export const LoginPage: React.FC = () => {
                       type="text"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
-                      placeholder="e.g., 9876543210 or name@domain.com"
+                      placeholder={activePersonaConfig.placeholder}
                       autoComplete="username"
-                      className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                      className="w-full pl-10 pr-4 py-2 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                     />
                   </div>
                 </div>
 
                 {/* Password Field */}
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center justify-between mb-1">
                     <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569]">
                       PASSWORD
                     </label>
                     <button
                       type="button"
-                      onClick={() => alert("To reset password in development, use the initial administrator credentials below or contact platform support.")}
-                      className="text-xs font-semibold text-[#008C45] hover:text-[#007038] hover:underline"
+                      onClick={() => alert(`To reset password in development, select the ${activePersonaConfig.label} persona tab or contact platform support.`)}
+                      className="text-xs font-semibold text-[#008C45] hover:text-[#007038] hover:underline cursor-pointer"
                     >
                       Forgot password?
                     </button>
@@ -230,12 +315,12 @@ export const LoginPage: React.FC = () => {
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••••••"
                       autoComplete="current-password"
-                      className="w-full pl-10 pr-11 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                      className="w-full pl-10 pr-11 py-2 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors"
+                      className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-gray-400 hover:text-gray-600 transition-colors cursor-pointer"
                     >
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
@@ -243,7 +328,7 @@ export const LoginPage: React.FC = () => {
                 </div>
 
                 {/* Remember Device Checkbox */}
-                <div className="flex items-center">
+                <div className="flex items-center pt-0.5">
                   <input
                     id="remember_device"
                     type="checkbox"
@@ -260,7 +345,7 @@ export const LoginPage: React.FC = () => {
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full py-2.5 sm:py-3 px-6 rounded-xl bg-gradient-to-r from-[#008C45] to-[#007338] hover:from-[#007a3c] hover:to-[#006230] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer"
+                  className="w-full py-2.5 px-6 rounded-xl bg-gradient-to-r from-[#008C45] to-[#007338] hover:from-[#007a3c] hover:to-[#006230] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md hover:shadow-lg transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
@@ -269,30 +354,32 @@ export const LoginPage: React.FC = () => {
                     </>
                   ) : (
                     <>
-                      <span>SIGN IN TO AGRISENTINEL</span>
+                      <span>SIGN IN AS {activePersonaConfig.label.toUpperCase()}</span>
                       <ArrowRight className="w-4 h-4" />
                     </>
                   )}
                 </button>
               </form>
 
-              {/* Development Credentials Card Helper (Clickable to autofill) */}
-              <div 
-                onClick={handleAutofillAdmin}
-                className="mt-4 pt-3.5 border-t border-gray-100 text-[10px] font-mono text-[#64748b] space-y-0.5 cursor-pointer hover:bg-slate-50/80 p-2 rounded-lg transition-colors"
-                title="Click to auto-fill admin credentials"
-              >
-                <div className="text-[#008C45] font-bold uppercase tracking-wider text-[9px] flex items-center justify-between">
-                  <span>DEVELOPMENT CREDENTIALS:</span>
-                  <span className="text-[9px] text-[#008C45] underline font-sans font-normal">Click to fill</span>
-                </div>
-                <div className="text-[#334155] leading-tight">
-                  Admin: <span className="text-[#008C45] font-semibold">admin@agrisentinel.local</span> / <span className="font-semibold text-slate-700">AdminSecurePass@2026</span>
-                </div>
+              {/* Persona Quick Fill Helper */}
+              <div className="mt-3 pt-2.5 border-t border-slate-100 flex items-center justify-between text-xs">
+                <span className="text-[11px] text-slate-500 font-medium flex items-center gap-1">
+                  <Sparkles className="w-3.5 h-3.5 text-[#008C45]" />
+                  <span>Demo {activePersonaConfig.label}:</span>
+                </span>
+                <button
+                  type="button"
+                  onClick={() => handleFillDemo(activePersona)}
+                  className="text-[11px] font-semibold text-[#008C45] hover:text-[#006e36] flex items-center gap-1 cursor-pointer bg-emerald-50/80 hover:bg-emerald-100/80 px-2.5 py-1 rounded-md transition-colors"
+                  title="Autofill credentials for this persona"
+                >
+                  <span>Quick Fill Credentials</span>
+                  <ArrowRight className="w-3 h-3" />
+                </button>
               </div>
 
               {/* Signup Link */}
-              <div className="mt-3 text-center text-xs text-[#64748b]">
+              <div className="mt-2 text-center text-xs text-[#64748b]">
                 Don't have an account?{' '}
                 <Link to="/signup" className="text-[#008C45] hover:text-[#006e36] font-bold hover:underline">
                   Create an account
