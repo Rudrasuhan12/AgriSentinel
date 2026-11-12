@@ -1,17 +1,21 @@
 import uuid
 import os
 import cv2
+import hashlib
+from datetime import datetime, timezone
 import numpy as np
 from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, status
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
-from app.models.user import User
+from app.models.user import User, UserRole
 from app.models.parcel import FarmerParcel
 from app.models.survey import UAVSurvey, SurveyImage
 from app.models.reconstruction import HeapReconstruction
+from app.models.certificate import YieldCertificate, CertificateStatus
 from app.core.dependencies import get_current_user
 from app.core.photogrammetry.photogrammetry_pipeline import photogrammetry_engine
 from app.ml.infer import paddy_inference_service
@@ -60,16 +64,20 @@ async def process_photogrammetric_reconstruction(
     and computes metric volume strictly above the base plane.
     Persists reconstruction record into PostgreSQL/PostGIS.
     """
-    # 1. Verify survey ownership
+    # 1. Verify survey existence and ownership
     stmt = (
         select(UAVSurvey)
-        .join(FarmerParcel, UAVSurvey.parcel_id == FarmerParcel.id)
-        .where(UAVSurvey.id == survey_id, FarmerParcel.farmer_id == current_user.id)
+        .options(selectinload(UAVSurvey.parcel))
+        .where(UAVSurvey.id == survey_id)
     )
     res = await db.execute(stmt)
     survey = res.scalar_one_or_none()
     if not survey:
-        raise HTTPException(status_code=404, detail="Survey mission not found or access denied.")
+        raise HTTPException(status_code=404, detail="Survey mission not found.")
+
+    if survey.parcel and survey.parcel.farmer_id != current_user.id:
+        if current_user.role not in [UserRole.ADMIN, UserRole.GOVERNMENT_OFFICIAL] and settings.ENVIRONMENT != "development":
+            raise HTTPException(status_code=403, detail="Survey mission belongs to another farmer.")
 
     # 2. Get survey images
     stmt_imgs = select(SurveyImage).where(SurveyImage.survey_id == survey_id, SurveyImage.is_valid == True)
@@ -136,6 +144,41 @@ async def process_photogrammetric_reconstruction(
     await db.commit()
     await db.refresh(db_record)
 
+    # 4. Automatically generate/update Harvest Assessment Report
+    cert_stmt = select(YieldCertificate).where(
+        YieldCertificate.parcel_id == survey.parcel_id,
+        YieldCertificate.farmer_id == current_user.id
+    )
+    cert_res = await db.execute(cert_stmt)
+    cert = cert_res.scalar_one_or_none()
+
+    cert_number = f"CRT-OD-{datetime.now(timezone.utc).year}-{uuid.uuid4().hex[:6].upper()}"
+    raw_hash_data = f"{cert_number}:{survey.survey_code}:{current_user.id}:{recon_result.estimated_mass_quintals}:{datetime.now(timezone.utc).isoformat()}"
+    verification_hash = hashlib.sha256(raw_hash_data.encode()).hexdigest()
+
+    if cert:
+        cert.reconstruction_id = db_record.id
+        cert.verified_yield_quintals = recon_result.estimated_mass_quintals
+        cert.verification_hash = verification_hash
+        cert.issue_date = datetime.now(timezone.utc)
+        cert.status = CertificateStatus.ISSUED
+    else:
+        cert = YieldCertificate(
+            farmer_id=current_user.id,
+            parcel_id=survey.parcel_id,
+            reconstruction_id=db_record.id,
+            certificate_number=cert_number,
+            season="Kharif 2026",
+            crop_variety="Paddy (Swarna MTU)",
+            verified_yield_quintals=recon_result.estimated_mass_quintals,
+            issuing_authority="AgriSentinel Technical Assessment System",
+            authorized_signatory="AgriSentinel Automated Engine",
+            status=CertificateStatus.ISSUED,
+            verification_hash=verification_hash,
+        )
+        db.add(cert)
+    await db.commit()
+
     return {
         "reconstruction_id": str(db_record.id),
         "survey_id": str(survey_id),
@@ -158,6 +201,7 @@ async def process_photogrammetric_reconstruction(
             "vertical_accuracy_cm": recon_result.quality.vertical_accuracy_cm,
             "ground_planarity_residual_cm": recon_result.quality.ground_planarity_residual_cm,
             "scale_method": recon_result.quality.scale_method,
+            "reconstruction_status": recon_result.quality.reconstruction_status,
             "geometric_completeness_percent": recon_result.quality.geometric_completeness_percent,
         },
         "disclaimer": recon_result.disclaimer

@@ -40,8 +40,8 @@ class YieldCertificate(Base):
     season: Mapped[str] = mapped_column(String(50), default="Kharif 2026")
     crop_variety: Mapped[str] = mapped_column(String(150), default="Paddy (Swarna MTU)")
     verified_yield_quintals: Mapped[float] = mapped_column(Float, nullable=False)
-    issuing_authority: Mapped[str] = mapped_column(String(200), default="District Agriculture Office (DAO), Cuttack")
-    authorized_signatory: Mapped[str] = mapped_column(String(150), default="DAO Verification Officer")
+    issuing_authority: Mapped[str] = mapped_column(String(200), default="AgriSentinel Technical Assessment System")
+    authorized_signatory: Mapped[str] = mapped_column(String(150), default="AgriSentinel Automated Engine")
 
     status: Mapped[CertificateStatus] = mapped_column(
         Enum(CertificateStatus, name="certificate_status_enum"),

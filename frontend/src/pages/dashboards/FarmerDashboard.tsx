@@ -208,11 +208,37 @@ export const FarmerDashboard: React.FC = () => {
       setIsReconstructing(true);
       setReconMessage(null);
       
-      // If there are surveys, use the first survey id; otherwise create one
+      // 1. Resolve an active survey ID (check state, then backend, then create from parcel)
       let srvId = surveys.length > 0 ? surveys[0].id : null;
-      if (!srvId && summary?.parcels && summary.parcels.length > 0) {
-        const newSurvey = await api.post<any>(`/api/surveys?parcel_id=${summary.parcels[0].id}`);
-        srvId = newSurvey.id;
+      if (!srvId) {
+        try {
+          const existingSurveys = await api.get<any[]>('/api/surveys');
+          if (existingSurveys && existingSurveys.length > 0) {
+            srvId = existingSurveys[0].id;
+            setSurveys(existingSurveys);
+          }
+        } catch {
+          // continue
+        }
+      }
+
+      if (!srvId) {
+        let parcelId = summary?.parcels && summary.parcels.length > 0 ? summary.parcels[0].id : null;
+        if (!parcelId) {
+          try {
+            const fields = await api.get<any[]>('/api/fields');
+            if (fields && fields.length > 0) {
+              parcelId = fields[0].id;
+            }
+          } catch {
+            // continue
+          }
+        }
+
+        if (parcelId) {
+          const newSurvey = await api.post<any>(`/api/surveys?parcel_id=${parcelId}`);
+          srvId = newSurvey.id;
+        }
       }
 
       if (!srvId) {
@@ -245,11 +271,13 @@ export const FarmerDashboard: React.FC = () => {
 
   const exportYieldCSV = () => {
     if (!summary?.parcels || summary.parcels.length === 0) return;
-    const headers = "Parcel Code,Khata,Plot,District,Village,Area (Acres),Primary Crop,Estimated Volume (m3),Estimated Mass (Q),Yield (Q/Ac),Regional Benchmark\n";
-    const rows = summary.parcels.map(p => {
-      const vol = (p.area_acres * 28.53).toFixed(2);
-      const mass = (p.area_acres * 16.49).toFixed(2);
-      return `${p.parcel_code},"${p.khata_number}","${p.plot_number}","${p.district}","${p.village}",${p.area_acres},"${p.primary_crop}",${vol},${mass},16.49,"Regional Average (Cuttack)"`;
+    const headers = "Parcel Code,Khata,Plot,District,Village,Area (Acres),Primary Crop,Reconstructed Volume (m3),Estimated Mass (Q),Yield (Q/Ac),Status\n";
+    const rows = summary.parcels.map((p, idx) => {
+      const vol = idx === 0 && latestRecon?.volume_cubic_meters ? latestRecon.volume_cubic_meters.toFixed(2) : "Awaiting Scan";
+      const mass = idx === 0 && latestRecon?.estimated_mass_quintals ? latestRecon.estimated_mass_quintals.toFixed(2) : "Awaiting Scan";
+      const yieldQ = idx === 0 && latestRecon?.estimated_mass_quintals ? (latestRecon.estimated_mass_quintals / p.area_acres).toFixed(2) : "Pending";
+      const status = idx === 0 && latestRecon ? "3D Scan Completed" : (p.verification_status || "Awaiting UAV Survey");
+      return `${p.parcel_code},"${p.khata_number || ''}","${p.plot_number || ''}","${p.district}","${p.village}",${p.area_acres},"${p.primary_crop}",${vol},${mass},${yieldQ},"${status}"`;
     }).join("\n");
     
     const blob = new Blob([headers + rows], { type: 'text/csv;charset=utf-8;' });
@@ -286,8 +314,8 @@ export const FarmerDashboard: React.FC = () => {
   const farmerEmail = summary?.farmer_email || user?.email || 'farmer@agrisentinel.local';
   const farmerLocation = summary?.farmer_location || 'Odisha, India';
   const latestRecon = reconstructions.length > 0 ? reconstructions[0] : null;
-  const currentEstimatedVolume = latestRecon?.volume_cubic_meters ?? summary?.estimated_volume_m3 ?? 128.40;
-  const currentEstimatedMass = latestRecon?.estimated_mass_quintals ?? summary?.estimated_mass_quintals ?? 742.15;
+  const currentEstimatedVolume = latestRecon?.volume_cubic_meters ?? summary?.estimated_volume_m3 ?? null;
+  const currentEstimatedMass = latestRecon?.estimated_mass_quintals ?? summary?.estimated_mass_quintals ?? null;
 
   return (
     <div className="min-h-screen bg-[#F7F9F8] text-[#172B22] flex flex-row font-sans antialiased relative selection:bg-[#008C45]/20">
@@ -1082,15 +1110,15 @@ export const FarmerDashboard: React.FC = () => {
                     <div className="flex items-center gap-2">
                       <div className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
                       <span className="font-mono text-xs font-bold text-[#172B22]">
-                        Active Heap Scan: Parcel #OD-BHK-104 (Swarna MTU)
+                        {latestRecon ? `Heap Scan: Survey ${latestRecon.survey_code || 'Completed'}` : 'Concept Preview — No Real Scan Data'}
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <span className="text-[10px] font-mono bg-white border border-[#E2E9E4] px-2 py-0.5 rounded text-slate-600">
-                        Datum: RANSAC Base Plane
+                        {latestRecon ? 'RANSAC Base Plane' : 'Illustrative Demo'}
                       </span>
-                      <span className="text-[10px] font-mono bg-[#ECFDF5] text-[#008C45] border border-[#A7F3D0] px-2 py-0.5 rounded font-bold">
-                        Metric Calibrated (1.000m)
+                      <span className="text-[10px] font-mono bg-amber-50 text-amber-700 border border-amber-200 px-2 py-0.5 rounded font-bold">
+                        {latestRecon ? 'Actual Reconstruction' : '⚠ Concept Preview'}
                       </span>
                     </div>
                   </div>
@@ -1123,15 +1151,25 @@ export const FarmerDashboard: React.FC = () => {
                       <div className="p-3 rounded-xl bg-[#F7F9F8] border border-[#E2E9E4]">
                         <span className="text-[10px] text-slate-500 uppercase block">Reconstructed Volume</span>
                         <div className="text-xl font-bold text-[#008C45] mt-0.5">
-                          {currentEstimatedVolume} <span className="text-xs font-normal">m³</span>
+                          {currentEstimatedVolume !== null ? (
+                            <>{currentEstimatedVolume} <span className="text-xs font-normal">m³</span></>
+                          ) : (
+                            <span className="text-xs text-slate-400 font-sans">Awaiting Scan</span>
+                          )}
                         </div>
-                        <span className="text-[9px] text-slate-400">Uncertainty: ±1.40%</span>
+                        <span className="text-[9px] text-slate-400">
+                          {latestRecon ? `Uncertainty: ±${latestRecon.error_margin_percent || 1.4}%` : 'Pending Survey'}
+                        </span>
                       </div>
 
                       <div className="p-3 rounded-xl bg-[#F7F9F8] border border-[#E2E9E4]">
                         <span className="text-[10px] text-slate-500 uppercase block">Bulk Density (ρ)</span>
                         <div className="text-xl font-bold text-[#172B22] mt-0.5">
-                          {latestRecon?.bulk_density_kg_per_m3 || 578.0} <span className="text-xs font-normal">kg/m³</span>
+                          {latestRecon?.bulk_density_kg_per_m3 ? (
+                            <>{latestRecon.bulk_density_kg_per_m3} <span className="text-xs font-normal">kg/m³</span></>
+                          ) : (
+                            <span className="text-xs text-slate-400 font-sans">578.0 kg/m³ (Std)</span>
+                          )}
                         </div>
                         <span className="text-[9px] text-emerald-600 font-sans">Swarna standard @ 14%</span>
                       </div>
@@ -1139,78 +1177,106 @@ export const FarmerDashboard: React.FC = () => {
                       <div className="p-3 rounded-xl bg-[#F7F9F8] border border-[#E2E9E4]">
                         <span className="text-[10px] text-slate-500 uppercase block">Total Mass (Quintals)</span>
                         <div className="text-xl font-bold text-[#008C45] mt-0.5">
-                          {currentEstimatedMass} <span className="text-xs font-normal">Q</span>
+                          {currentEstimatedMass !== null ? (
+                            <>{currentEstimatedMass} <span className="text-xs font-normal">Q</span></>
+                          ) : (
+                            <span className="text-xs text-slate-400 font-sans">Pending Scan</span>
+                          )}
                         </div>
-                        <span className="text-[9px] text-slate-400">{(currentEstimatedMass / 10).toFixed(2)} Metric Tonnes</span>
+                        <span className="text-[9px] text-slate-400">
+                          {currentEstimatedMass !== null ? `${(currentEstimatedMass / 10).toFixed(2)} Metric Tonnes` : 'Awaiting quantification'}
+                        </span>
                       </div>
 
                       <div className="p-3 rounded-xl bg-[#F7F9F8] border border-[#E2E9E4]">
                         <span className="text-[10px] text-slate-500 uppercase block">Footprint Area</span>
                         <div className="text-xl font-bold text-[#172B22] mt-0.5">
-                          78.54 <span className="text-xs font-normal">m²</span>
+                          {latestRecon?.footprint_area_m2 ? (
+                            <>{latestRecon.footprint_area_m2.toFixed(2)} <span className="text-xs font-normal">m²</span></>
+                          ) : (
+                            <span className="text-xs text-slate-400 font-sans">Pending Mesh</span>
+                          )}
                         </div>
-                        <span className="text-[9px] text-slate-400">Peak Height: 1.65 m</span>
+                        <span className="text-[9px] text-slate-400">
+                          {latestRecon?.peak_height_meters ? `Peak Height: ${latestRecon.peak_height_meters.toFixed(2)} m` : 'Awaiting 3D Elevation'}
+                        </span>
                       </div>
                     </div>
 
                     <div className="pt-2 border-t border-[#E2E9E4] space-y-1.5 text-xs text-slate-600 font-mono">
                       <div className="flex justify-between">
                         <span className="text-slate-500">Vertical Accuracy RMSE:</span>
-                        <span className="font-bold text-[#172B22]">1.40 cm</span>
+                        <span className="font-bold text-[#172B22]">
+                          {latestRecon?.rmse_vertical_cm ? `${latestRecon.rmse_vertical_cm.toFixed(2)} cm` : 'Awaiting Audit'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Reprojection RMSE:</span>
-                        <span className="font-bold text-[#172B22]">0.88 px</span>
+                        <span className="font-bold text-[#172B22]">
+                          {latestRecon?.quality?.reprojection_rmse_px ? `${latestRecon.quality.reprojection_rmse_px.toFixed(2)} px` : 'Awaiting Calibration'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Point Cloud Count:</span>
-                        <span className="font-bold text-[#008C45]">16,000 points</span>
+                        <span className="font-bold text-[#008C45]">
+                          {latestRecon?.point_cloud_count ? `${latestRecon.point_cloud_count.toLocaleString()} points` : 'Awaiting Point Cloud'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-500">Scale Factor:</span>
-                        <span className="font-bold text-[#172B22]">1.000 (Target Marker Calibrated)</span>
+                        <span className="font-bold text-[#172B22]">
+                          {latestRecon ? '1.000 (Target Marker Calibrated)' : 'Standard 1:1 Metric Datum'}
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Odisha CCE Regional Benchmark Comparison Card */}
+                  {/* Ground Truth & CCE Calibration Status Card */}
                   <div className="bg-gradient-to-br from-emerald-50/70 to-teal-50/40 border border-[#A7F3D0] rounded-2xl p-5 shadow-xs space-y-3">
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-1.5 text-xs font-bold text-[#065F46] uppercase font-mono">
                         <Sparkles className="w-3.5 h-3.5 text-[#008C45]" />
-                        <span>Cuttack CCE Benchmark Comparison</span>
+                        <span>Empirical Ground-Truth Calibration</span>
                       </div>
                       <span className="text-[10px] font-mono bg-white border border-[#A7F3D0] px-2 py-0.5 rounded-full text-[#008C45] font-bold">
                         Kharif 2026
                       </span>
                     </div>
 
-                    <div className="space-y-1 text-xs text-[#172B22]">
+                    <div className="space-y-1.5 text-xs text-[#172B22]">
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Calculated Yield per Acre:</span>
-                        <span className="font-bold font-mono text-[#008C45] text-sm">26.51 Quintals/Acre</span>
+                        <span className="text-slate-600">Calculated Heap Mass:</span>
+                        <span className="font-bold font-mono text-[#008C45]">
+                          {currentEstimatedMass !== null ? `${currentEstimatedMass} Quintals` : 'Awaiting Survey'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">District Historical Benchmark:</span>
-                        <span className="font-mono text-slate-700">15.4 – 18.2 Quintals/Acre</span>
+                        <span className="text-slate-600">Odisha CCE Standard Range:</span>
+                        <span className="font-mono text-slate-700">15.4 – 18.2 Q/Acre (Baseline)</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Performance Classification:</span>
-                        <span className="font-bold text-emerald-700">High Yield (Top Decile)</span>
+                        <span className="text-slate-600">Calibration Status:</span>
+                        <span className="font-bold text-emerald-700">
+                          {latestRecon ? 'Empirical Quantification Active' : 'Awaiting Field Survey Data'}
+                        </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-slate-600">Physical Outlier Plausibility:</span>
-                        <span className="font-bold text-[#008C45]">Passed (Within 5 - 35 Q/Ac)</span>
+                        <span className="text-slate-600">Physical Plausibility Check:</span>
+                        <span className="font-bold text-[#008C45]">
+                          {latestRecon ? 'Within Valid Physical Bounds' : 'Pending Verification'}
+                        </span>
                       </div>
                     </div>
 
                     <div className="w-full bg-slate-200/80 rounded-full h-2 mt-2 overflow-hidden">
-                      <div className="bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full w-[78%]" />
+                      <div className={`bg-gradient-to-r from-emerald-500 to-teal-500 h-2 rounded-full ${latestRecon ? 'w-[75%]' : 'w-[20%]'}`} />
                     </div>
                     <div className="flex justify-between text-[10px] font-mono text-slate-500">
-                      <span>Low (5 Q/ac)</span>
-                      <span>District Avg (16.8 Q/ac)</span>
-                      <span className="font-bold text-[#008C45]">Your Field (26.5 Q/ac)</span>
+                      <span>Baseline (15 Q/ac)</span>
+                      <span>Target Datum</span>
+                      <span className="font-bold text-[#008C45]">
+                        {latestRecon ? 'Scan Integrated' : 'Awaiting Flight'}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -1254,12 +1320,22 @@ export const FarmerDashboard: React.FC = () => {
                             <td className="py-3.5 px-4">{p.khata_number} / {p.plot_number}</td>
                             <td className="py-3.5 px-4">{p.area_acres} Acres</td>
                             <td className="py-3.5 px-4 font-sans font-medium">{p.primary_crop}</td>
-                            <td className="py-3.5 px-4 font-bold">{(p.area_acres * 28.53).toFixed(1)} m³</td>
-                            <td className="py-3.5 px-4 font-bold text-[#008C45]">{(p.area_acres * 164.9).toFixed(1)} Q</td>
-                            <td className="py-3.5 px-4 font-bold">16.49 Q/ac</td>
+                            <td className="py-3.5 px-4 font-bold">
+                              {idx === 0 && latestRecon?.volume_cubic_meters ? `${latestRecon.volume_cubic_meters} m³` : '—'}
+                            </td>
+                            <td className="py-3.5 px-4 font-bold text-[#008C45]">
+                              {idx === 0 && latestRecon?.estimated_mass_quintals ? `${latestRecon.estimated_mass_quintals} Q` : '—'}
+                            </td>
+                            <td className="py-3.5 px-4 font-bold">
+                              {idx === 0 && latestRecon?.estimated_mass_quintals ? `${(latestRecon.estimated_mass_quintals / p.area_acres).toFixed(1)} Q/ac` : 'Pending'}
+                            </td>
                             <td className="py-3.5 px-4">
-                              <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#ECFDF5] text-[#008C45] border border-[#A7F3D0]">
-                                {idx === 0 ? 'Verified 3D Scan' : 'Harvest In Progress'}
+                              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                idx === 0 && latestRecon 
+                                  ? 'bg-[#ECFDF5] text-[#008C45] border border-[#A7F3D0]' 
+                                  : 'bg-slate-100 text-slate-600 border border-slate-200'
+                              }`}>
+                                {idx === 0 && latestRecon ? '3D Scan Completed' : (p.verification_status || 'Awaiting UAV Survey')}
                               </span>
                             </td>
                           </tr>
@@ -1279,34 +1355,73 @@ export const FarmerDashboard: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 4: YIELD CERTIFICATES */}
+          {/* TAB 4: HARVEST ASSESSMENT REPORTS */}
           {activeTab === 'certificates' && (
             <div className="bg-white border border-[#E2E9E4] rounded-2xl p-6 shadow-xs space-y-6">
               <div className="pb-4 border-b border-[#E2E9E4] flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                   <h2 className="font-display font-bold text-xl text-[#172B22] flex items-center gap-2">
                     <Award className="w-5 h-5 text-[#008C45]" />
-                    <span>Verified Harvest Yield Certificates</span>
+                    <span>Harvest Assessment Reports</span>
                   </h2>
                   <p className="text-xs text-[#64746A] mt-0.5">
-                    Official digital certificates issued by the District Agriculture Office (DAO), Cuttack with SHA-256 cryptographic verification.
+                    Empirical harvest assessment reports generated by AgriSentinel 3D Photogrammetry with SHA-256 cryptographic integrity hash.
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await api.post('/api/yield-estimates/generate');
+                        alert(res.message || 'Assessment report generated successfully!');
+                        fetchTabDetails('certificates');
+                      } catch (err: any) {
+                        alert(err.response?.data?.detail || err.message || 'Failed to generate assessment report');
+                      }
+                    }}
+                    className="px-3.5 py-1.5 rounded-xl bg-[#008C45] text-white text-xs font-semibold hover:bg-[#006B36] flex items-center gap-1.5 cursor-pointer shadow-xs"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" />
+                    <span>Generate Report</span>
+                  </button>
                   <span className="px-3 py-1 rounded-full text-[11px] font-mono font-bold bg-[#ECFDF5] text-[#008C45] border border-[#A7F3D0]">
-                    Authenticity: Government Verified
+                    Authenticity: SHA-256 Cryptographic Hash
                   </span>
                 </div>
               </div>
 
+              {/* Statutory Notice Banner */}
+              <div className="p-3.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-start gap-2.5">
+                <Info className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+                <div className="leading-relaxed">
+                  <span className="font-bold">Technical Validation Notice: </span>
+                  These reports represent automated UAV photogrammetric grain volume and mass quantifications. They are technical decision-support assessments and do not constitute statutory revenue settlement certificates or government land deeds.
+                </div>
+              </div>
+
               {certificates.length === 0 ? (
-                <div className="py-14 text-center rounded-xl border border-dashed border-[#E2E9E4] bg-[#F7F9F8] p-6 space-y-2">
+                <div className="py-14 text-center rounded-xl border border-dashed border-[#E2E9E4] bg-[#F7F9F8] p-6 space-y-3">
                   <Award className="w-10 h-10 text-slate-400 mx-auto" />
-                  <p className="text-sm font-semibold text-[#172B22]">No verified yield certificates available.</p>
+                  <p className="text-sm font-semibold text-[#172B22]">No assessment reports generated yet.</p>
                   <p className="text-xs text-[#64746A] max-w-md mx-auto">
-                    Certificates are formally issued by the District Agricultural Officer following volumetric analysis and official audit.
+                    Generate an authoritative technical assessment report from your registered parcel geometry and 3D photogrammetry volume metrics.
                   </p>
+                  <button
+                    onClick={async () => {
+                      try {
+                        const res = await api.post('/api/yield-estimates/generate');
+                        alert(res.message || 'Assessment report generated successfully!');
+                        fetchTabDetails('certificates');
+                      } catch (err: any) {
+                        alert(err.response?.data?.detail || err.message || 'Failed to generate assessment report');
+                      }
+                    }}
+                    className="mt-3 px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#008C45] to-[#006B36] text-white text-xs font-semibold flex items-center gap-2 mx-auto shadow-xs hover:shadow-md transition-all cursor-pointer"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    <span>Generate Assessment Report Now</span>
+                  </button>
                 </div>
               ) : (
                 <div className="space-y-4">
@@ -1319,7 +1434,7 @@ export const FarmerDashboard: React.FC = () => {
                         <div className="flex items-center gap-2">
                           <span className="font-mono font-bold text-base text-[#172B22]">{c.certificate_number}</span>
                           <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-100 text-emerald-800 border border-emerald-300">
-                            {c.status || 'ISSUED'}
+                            {c.status || 'TECHNICALLY_REVIEWED'}
                           </span>
                         </div>
 
@@ -1328,12 +1443,12 @@ export const FarmerDashboard: React.FC = () => {
                         </div>
 
                         <div className="text-[11px] text-slate-500 font-mono">
-                          Issuing Authority: <span className="font-medium text-[#172B22]">{c.issuing_authority}</span> • Signatory: {c.authorized_signatory}
+                          Issuing Engine: <span className="font-medium text-[#172B22]">{c.issuing_authority}</span> • Signatory: {c.authorized_signatory}
                         </div>
 
                         {c.verification_hash && (
                           <div className="flex items-center gap-2 pt-1">
-                            <span className="text-[10px] font-mono text-slate-400">SHA-256 Hash:</span>
+                            <span className="text-[10px] font-mono text-slate-400">SHA-256 Digest:</span>
                             <span className="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-[#E2E9E4] text-slate-600 truncate max-w-xs sm:max-w-md">
                               {c.verification_hash}
                             </span>
@@ -1343,11 +1458,30 @@ export const FarmerDashboard: React.FC = () => {
 
                       <div className="flex items-center gap-2 self-start lg:self-auto">
                         <button 
-                          onClick={() => alert(`Certificate verified for ${c.certificate_number}.\n\nCryptographic SHA-256 Digest:\n${c.verification_hash}\n\nAuthority: ${c.issuing_authority}`)}
+                          onClick={async () => {
+                            try {
+                              const token = localStorage.getItem("agrisentinel_token") || sessionStorage.getItem("agrisentinel_token");
+                              const response = await fetch(`/api/yield-estimates/${c.id}/pdf`, {
+                                headers: token ? { Authorization: `Bearer ${token}` } : {}
+                              });
+                              if (!response.ok) throw new Error("Failed to generate PDF report");
+                              const blob = await response.blob();
+                              const url = window.URL.createObjectURL(blob);
+                              const a = document.createElement("a");
+                              a.href = url;
+                              a.download = `AgriSentinel_Report_${c.certificate_number}.pdf`;
+                              document.body.appendChild(a);
+                              a.click();
+                              window.URL.revokeObjectURL(url);
+                              document.body.removeChild(a);
+                            } catch (err: any) {
+                              alert(`Could not download PDF: ${err.message}`);
+                            }
+                          }}
                           className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#008C45] to-[#006B36] text-white text-xs font-semibold flex items-center gap-2 shadow-xs hover:shadow-md transition-all cursor-pointer"
                         >
                           <FileCheck className="w-4 h-4" />
-                          <span>Verify & Download PDF</span>
+                          <span>Download Assessment PDF</span>
                         </button>
                       </div>
                     </div>

@@ -3,8 +3,15 @@ from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sess
 from sqlalchemy.orm import DeclarativeBase
 from app.config import settings
 
+# Normalize Database URL for AsyncPG and cloud providers like Neon
+database_url = settings.DATABASE_URL
+if database_url.startswith("postgresql://"):
+    database_url = database_url.replace("postgresql://", "postgresql+asyncpg://", 1)
+if "sslmode=require" in database_url:
+    database_url = database_url.replace("sslmode=require", "ssl=require")
+
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    database_url,
     echo=False,
     pool_size=10,
     max_overflow=20,

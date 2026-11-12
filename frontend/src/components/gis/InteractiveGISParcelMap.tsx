@@ -85,10 +85,10 @@ export const InteractiveGISParcelMap: React.FC<InteractiveGISParcelMapProps> = (
             fillOpacity: 0.35,
           });
 
-          // Bind Popup
+          // Bind Non-Overlapping Interactive Tooltip
           polygon.bindTooltip(
-            `<strong>${p.parcel_code}</strong><br/>Plot: ${p.plot_number} • Khata: ${p.khata_number}<br/>Area: ${p.area_acres} Acres`,
-            { permanent: !interactive, direction: 'center', className: 'gis-parcel-tooltip' }
+            `<strong>${p.parcel_code}</strong><br/>Plot: ${p.plot_number || 'N/A'} • Khata: ${p.khata_number || 'N/A'}<br/>Area: ${p.area_acres} Acres`,
+            { permanent: false, direction: 'auto', className: 'gis-parcel-tooltip' }
           );
 
           if (onSelectParcel) {
@@ -111,7 +111,12 @@ export const InteractiveGISParcelMap: React.FC<InteractiveGISParcelMapProps> = (
       }
     }
 
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 150);
+
     return () => {
+      clearTimeout(timer);
       map.remove();
       mapInstanceRef.current = null;
     };

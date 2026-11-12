@@ -109,8 +109,8 @@ async def compute_yield_estimate(
         season=req.season,
         crop_variety=req.crop_variety,
         verified_yield_quintals=yield_result.total_mass_quintals,
-        issuing_authority="District Agriculture Office (DAO), Cuttack",
-        authorized_signatory="Odisha Remote Sensing & Agriculture Sentinel System",
+        issuing_authority="AgriSentinel Technical Assessment System",
+        authorized_signatory="AgriSentinel Photogrammetry & Yield Engine",
         status=CertificateStatus.ISSUED,
         verification_hash=verification_hash,
     )
@@ -128,12 +128,80 @@ async def compute_yield_estimate(
     }
 
 
+@router.post("/generate", status_code=status.HTTP_201_CREATED)
+async def quick_generate_assessment_report(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    On-demand generation of a Harvest Assessment Report for the farmer's registered parcels
+    using the latest available 3D photogrammetry scan or baseline field parameters.
+    """
+    from app.models.survey import UAVSurvey
+    p_stmt = select(FarmerParcel).where(FarmerParcel.farmer_id == current_user.id).order_by(FarmerParcel.created_at)
+    p_res = await db.execute(p_stmt)
+    parcels = p_res.scalars().all()
+
+    if not parcels:
+        raise HTTPException(
+            status_code=400,
+            detail="Please register at least one land parcel in My Parcels before generating an assessment report."
+        )
+
+    target_parcel = parcels[0]
+
+    # Look for latest photogrammetry reconstruction
+    r_stmt = (
+        select(HeapReconstruction)
+        .join(UAVSurvey, HeapReconstruction.survey_id == UAVSurvey.id)
+        .where(UAVSurvey.parcel_id.in_([p.id for p in parcels]))
+        .order_by(desc(HeapReconstruction.created_at))
+    )
+    r_res = await db.execute(r_stmt)
+    recon = r_res.scalar_one_or_none()
+
+    yield_mass = recon.estimated_mass_quintals if recon else round(target_parcel.area_acres * 16.5, 2)
+    recon_id = recon.id if recon else None
+
+    cert_number = f"CRT-OD-{datetime.now(timezone.utc).year}-{uuid.uuid4().hex[:6].upper()}"
+    raw_hash_data = f"{cert_number}:{target_parcel.parcel_code}:{current_user.id}:{yield_mass}:{datetime.now(timezone.utc).isoformat()}"
+    verification_hash = hashlib.sha256(raw_hash_data.encode()).hexdigest()
+
+    new_cert = YieldCertificate(
+        farmer_id=current_user.id,
+        parcel_id=target_parcel.id,
+        reconstruction_id=recon_id,
+        certificate_number=cert_number,
+        season="Kharif 2026",
+        crop_variety=target_parcel.primary_crop or "Paddy (Swarna MTU)",
+        verified_yield_quintals=yield_mass,
+        issuing_authority="AgriSentinel Technical Assessment System",
+        authorized_signatory="AgriSentinel Automated Engine",
+        status=CertificateStatus.ISSUED,
+        verification_hash=verification_hash,
+    )
+    db.add(new_cert)
+    await db.commit()
+    await db.refresh(new_cert)
+
+    return {
+        "id": str(new_cert.id),
+        "certificate_number": new_cert.certificate_number,
+        "parcel_code": target_parcel.parcel_code,
+        "verified_yield_quintals": new_cert.verified_yield_quintals,
+        "status": new_cert.status.value,
+        "verification_hash": new_cert.verification_hash,
+        "message": f"Assessment Report {new_cert.certificate_number} generated successfully!"
+    }
+
+
 @router.get("")
 async def list_yield_estimates(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     """List all issued yield certificates and estimates for the authenticated farmer."""
+    from app.models.survey import UAVSurvey
     stmt = (
         select(YieldCertificate)
         .where(YieldCertificate.farmer_id == current_user.id)
@@ -142,6 +210,47 @@ async def list_yield_estimates(
     )
     res = await db.execute(stmt)
     certs = res.scalars().all()
+
+    # If farmer has parcels and completed a reconstruction, auto-generate assessment report if none exists
+    if not certs:
+        p_stmt = select(FarmerParcel).where(FarmerParcel.farmer_id == current_user.id).order_by(FarmerParcel.created_at)
+        p_res = await db.execute(p_stmt)
+        parcels = p_res.scalars().all()
+        if parcels:
+            target_parcel = parcels[0]
+            r_stmt = (
+                select(HeapReconstruction)
+                .join(UAVSurvey, HeapReconstruction.survey_id == UAVSurvey.id)
+                .where(UAVSurvey.parcel_id.in_([p.id for p in parcels]))
+                .order_by(desc(HeapReconstruction.created_at))
+            )
+            r_res = await db.execute(r_stmt)
+            recon = r_res.scalar_one_or_none()
+
+            if recon:
+                yield_mass = recon.estimated_mass_quintals
+                cert_number = f"CRT-OD-{datetime.now(timezone.utc).year}-{uuid.uuid4().hex[:6].upper()}"
+                raw_hash_data = f"{cert_number}:{target_parcel.parcel_code}:{current_user.id}:{yield_mass}:{datetime.now(timezone.utc).isoformat()}"
+                verification_hash = hashlib.sha256(raw_hash_data.encode()).hexdigest()
+
+                new_cert = YieldCertificate(
+                    farmer_id=current_user.id,
+                    parcel_id=target_parcel.id,
+                    reconstruction_id=recon.id,
+                    certificate_number=cert_number,
+                    season="Kharif 2026",
+                    crop_variety=target_parcel.primary_crop or "Paddy (Swarna MTU)",
+                    verified_yield_quintals=yield_mass,
+                    issuing_authority="AgriSentinel Technical Assessment System",
+                    authorized_signatory="AgriSentinel Automated Engine",
+                    status=CertificateStatus.ISSUED,
+                    verification_hash=verification_hash,
+                )
+                db.add(new_cert)
+                await db.commit()
+                await db.refresh(new_cert)
+                new_cert.parcel = target_parcel
+                certs = [new_cert]
 
     return [
         {
@@ -200,4 +309,143 @@ async def get_yield_estimate_detail(
         "reconstruction_volume_m3": cert.reconstruction.volume_cubic_meters if cert.reconstruction else None,
         "issue_date": cert.issue_date.isoformat(),
     }
+
+
+@router.get("/{cert_id}/pdf")
+async def download_yield_report_pdf(
+    cert_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Generate and stream a real PDF assessment report with SHA-256 integrity hash & QR code."""
+    from fastapi.responses import Response
+    from app.services.report_generator import generate_harvest_assessment_pdf
+
+    t_cert = YieldCertificate.__table__.c
+    t_parcel = FarmerParcel.__table__.c
+    t_recon = HeapReconstruction.__table__.c
+
+    stmt = select(
+        t_cert.certificate_number,
+        t_cert.verified_yield_quintals,
+        t_cert.crop_variety,
+        t_cert.season,
+        t_cert.verification_hash,
+        t_cert.issue_date,
+        t_cert.parcel_id,
+        t_cert.reconstruction_id,
+        t_cert.farmer_id
+    ).where(t_cert.id == cert_id)
+    res = await db.execute(stmt)
+    cert_row = res.first()
+    if not cert_row:
+        raise HTTPException(status_code=404, detail="Assessment report not found.")
+
+    cert_num, verified_yield, crop_var, season, v_hash, issue_dt, p_id, r_id, f_id = cert_row
+
+    # Access control: check ownership via pure string comparison
+    curr_user_id = str(current_user.__dict__.get("id", ""))
+    if str(f_id) != curr_user_id:
+        raise HTTPException(status_code=403, detail="Unauthorized access to this report.")
+
+    p_stmt = select(
+        t_parcel.parcel_code,
+        t_parcel.district,
+        t_parcel.village,
+        t_parcel.area_acres
+    ).where(t_parcel.id == p_id)
+    p_res = await db.execute(p_stmt)
+    p_row = p_res.first()
+
+    parcel_code = str(p_row[0]) if p_row and p_row[0] else "UNKNOWN-PARCEL"
+    district = str(p_row[1]) if p_row and p_row[1] else "Cuttack"
+    village = str(p_row[2]) if p_row and p_row[2] else "Baranga"
+    area_acres = float(p_row[3]) if p_row and p_row[3] else 1.0
+
+    vol_m3 = (float(verified_yield) * 100.0 / 578.0)
+    bulk_density = 578.0
+    if r_id:
+        r_stmt = select(
+            t_recon.volume_cubic_meters,
+            t_recon.bulk_density_kg_per_m3
+        ).where(t_recon.id == r_id)
+        r_res = await db.execute(r_stmt)
+        r_row = r_res.first()
+        if r_row:
+            vol_m3 = float(r_row[0]) if r_row[0] else vol_m3
+            bulk_density = float(r_row[1]) if r_row[1] else bulk_density
+
+    farmer_email = str(current_user.__dict__.get("email", ""))
+    farmer_name = farmer_email.split('@')[0].capitalize() if farmer_email else "Registered Farmer"
+    yield_q_ac = float(verified_yield) / area_acres if area_acres > 0 else 0.0
+
+    pdf_bytes = generate_harvest_assessment_pdf(
+        report_number=cert_num,
+        farmer_name=farmer_name,
+        parcel_code=parcel_code,
+        district=district,
+        village=village,
+        area_acres=area_acres,
+        crop_variety=crop_var,
+        season=season,
+        reconstructed_volume_m3=vol_m3,
+        bulk_density_kg_m3=bulk_density,
+        estimated_mass_quintals=verified_yield,
+        yield_quintals_per_acre=round(yield_q_ac, 2),
+        verification_hash=v_hash,
+        issue_date=issue_dt,
+        is_demo=False
+    )
+
+    filename = f"AgriSentinel_Report_{cert_num}.pdf"
+    return Response(
+        content=pdf_bytes,
+        media_type="application/pdf",
+        headers={
+            "Content-Disposition": f"attachment; filename={filename}",
+            "X-Report-Hash": v_hash
+        }
+    )
+
+
+@router.get("/verify/{verification_token}")
+async def public_verify_report(
+    verification_token: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Public verification endpoint for QR code scans.
+    Validates authenticity via SHA-256 digest without exposing private PII.
+    """
+    stmt = (
+        select(YieldCertificate)
+        .where(
+            (YieldCertificate.verification_hash == verification_token) |
+            (YieldCertificate.certificate_number == verification_token)
+        )
+        .options(selectinload(YieldCertificate.parcel))
+    )
+    res = await db.execute(stmt)
+    cert = res.scalar_one_or_none()
+
+    if not cert:
+        return {
+            "valid": False,
+            "message": "Certificate or assessment report could not be cryptographically verified.",
+            "status": "UNVERIFIED"
+        }
+
+    return {
+        "valid": True,
+        "status": "TECHNICALLY_VERIFIED",
+        "certificate_number": cert.certificate_number,
+        "season": cert.season,
+        "crop_variety": cert.crop_variety,
+        "verified_yield_quintals": cert.verified_yield_quintals,
+        "issuing_authority": cert.issuing_authority,
+        "issue_date": cert.issue_date.isoformat(),
+        "verification_hash": cert.verification_hash,
+        "disclaimer": "This is an AgriSentinel automated technical assessment, not a statutory revenue certificate."
+    }
+
 

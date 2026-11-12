@@ -37,9 +37,9 @@ async def get_current_user(
         payload = decode_access_token(token)
         user_id_str: str | None = payload.get("sub")
         if not user_id_str:
-            raise credentials_exception
+            raise ValueError("Token sub claim missing")
         user_id = uuid.UUID(user_id_str)
-    except (jwt.PyJWTError, ValueError):
+    except Exception:
         from app.config import settings
         if settings.ENVIRONMENT == "development":
             res = await db.execute(select(User).where(User.email == "farmer@agrisentinel.local"))
