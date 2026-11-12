@@ -34,6 +34,7 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.CORS_ORIGINS,
+    allow_origin_regex=r"^https?://(localhost|127\.0\.0\.1)(:\d+)?$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -42,6 +43,25 @@ app.add_middleware(
 # Include Routers
 app.include_router(auth_router)
 app.include_router(admin_router)
+
+
+@app.get("/", tags=["Root"])
+async def root():
+    return {
+        "message": "AgriSentinel API Backend is online and operational",
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "status": "healthy",
+        "documentation": {
+            "swagger_ui": "/docs",
+            "redoc": "/redoc"
+        },
+        "endpoints": {
+            "health": "/health",
+            "auth": "/api/auth",
+            "admin": "/api/admin"
+        }
+    }
 
 
 @app.get("/health", tags=["System Health"])
