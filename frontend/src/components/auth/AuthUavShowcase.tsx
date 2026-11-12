@@ -20,18 +20,23 @@ export const AuthUavShowcase: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col justify-center max-w-lg lg:max-w-xl w-full">
+    <motion.div 
+      initial={{ opacity: 0, x: -16 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ duration: 0.6, ease: "easeOut" }}
+      className="flex flex-col justify-center max-w-lg lg:max-w-xl w-full"
+    >
       
       {/* Aerial UAV Imagery Card with Live Animated Geospatial HUD */}
-      <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200/90 shadow-lg aspect-[16/10] max-h-[190px] sm:max-h-[220px] lg:max-h-[240px] bg-slate-900 group">
+      <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200/90 shadow-md hover:shadow-xl transition-all duration-300 aspect-[16/9.5] max-h-[185px] sm:max-h-[205px] lg:max-h-[220px] bg-slate-900 group cursor-default">
         
-        {/* Drone Aerial Imagery with Slow Cinematic Zoom */}
+        {/* Drone Aerial Imagery with Slow Cinematic Zoom & Gentle Hover */}
         <motion.img 
           src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200&auto=format&fit=crop" 
           alt="Agricultural field surveyed by UAV" 
-          animate={{ scale: [1, 1.05, 1] }}
+          animate={{ scale: [1, 1.04, 1] }}
           transition={{ duration: 16, repeat: Infinity, ease: "easeInOut" }}
-          className="w-full h-full object-cover object-center filter saturate-[0.95] contrast-[1.05]"
+          className="w-full h-full object-cover object-center filter saturate-[0.95] contrast-[1.05] group-hover:scale-105 transition-transform duration-700"
         />
         
         {/* Atmospheric Vignette Overlay */}
@@ -196,15 +201,15 @@ export const AuthUavShowcase: React.FC = () => {
       </div>
 
       {/* Eyebrow Badge */}
-      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] text-[10px] font-mono font-bold uppercase tracking-wider mt-3 mb-1.5 w-fit">
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] text-[10px] font-mono font-bold uppercase tracking-wider mt-3 mb-1.5 w-fit shadow-xs">
         <Sprout className="w-3 h-3 text-[#008C45]" />
         <span>UNIFIED AGRICULTURAL INTELLIGENCE</span>
       </div>
 
-      {/* Editorial Heading */}
+      {/* Editorial Heading with Green Gradient */}
       <h1 className="text-2xl sm:text-[26px] lg:text-[28px] font-display font-extrabold text-[#0f172a] leading-tight tracking-tight">
         Intelligence That Grows With <br className="hidden sm:inline" />
-        <span className="text-[#008C45]">Every Field.</span>
+        <span className="bg-gradient-to-r from-[#008C45] via-[#059669] to-[#10b981] bg-clip-text text-transparent">Every Field.</span>
       </h1>
 
       {/* Platform Description */}
@@ -214,20 +219,20 @@ export const AuthUavShowcase: React.FC = () => {
 
       {/* Horizontal Feature Highlights Strip */}
       <div className="flex items-center flex-wrap gap-y-1.5 mt-3 pt-2.5 border-t border-gray-100 text-xs text-[#334155] font-medium">
-        <div className="flex items-center gap-1.5 pr-3.5 border-r border-gray-200">
+        <div className="flex items-center gap-1.5 pr-3.5 border-r border-gray-200 hover:text-[#008C45] transition-colors">
           <Compass className="w-3.5 h-3.5 text-[#008C45]" />
           <span>UAV Analytics</span>
         </div>
-        <div className="flex items-center gap-1.5 px-3.5 border-r border-gray-200">
+        <div className="flex items-center gap-1.5 px-3.5 border-r border-gray-200 hover:text-[#008C45] transition-colors">
           <Layers className="w-3.5 h-3.5 text-[#008C45]" />
           <span>Geospatial Insights</span>
         </div>
-        <div className="flex items-center gap-1.5 pl-3.5">
+        <div className="flex items-center gap-1.5 pl-3.5 hover:text-[#008C45] transition-colors">
           <Sprout className="w-3.5 h-3.5 text-[#008C45]" />
           <span>Yield Intelligence</span>
         </div>
       </div>
 
-    </div>
+    </motion.div>
   );
 };
