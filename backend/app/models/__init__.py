@@ -10,6 +10,7 @@ from app.models.reconstruction import HeapReconstruction
 from app.models.certificate import YieldCertificate, CertificateStatus
 from app.models.notification import FarmerNotification, NotificationType
 from app.models.support import SupportContact
+from app.models.cadastral import CadastralParcel
 
 __all__ = [
     "User",
@@ -22,6 +23,7 @@ __all__ = [
     "ConsentRecord",
     "FarmerParcel",
     "ParcelVerificationStatus",
+    "CadastralParcel",
     "SatelliteObservation",
     "SatelliteProcessingStatus",
     "UAVSurvey",

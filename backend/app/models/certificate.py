@@ -58,3 +58,4 @@ class YieldCertificate(Base):
     farmer: Mapped[User] = relationship("User")
     parcel: Mapped[FarmerParcel] = relationship("FarmerParcel", back_populates="certificates")
     reconstruction: Mapped[Optional[HeapReconstruction]] = relationship("HeapReconstruction", back_populates="certificates")
+

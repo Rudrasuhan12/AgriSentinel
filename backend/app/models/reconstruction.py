@@ -38,3 +38,4 @@ class HeapReconstruction(Base):
     # Relationships
     survey: Mapped[UAVSurvey] = relationship("UAVSurvey", back_populates="reconstruction")
     certificates: Mapped[list[YieldCertificate]] = relationship("YieldCertificate", back_populates="reconstruction")
+

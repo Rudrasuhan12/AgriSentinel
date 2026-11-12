@@ -53,3 +53,4 @@ class SatelliteObservation(Base):
 
     # Relationship
     parcel: Mapped[FarmerParcel] = relationship("FarmerParcel", back_populates="observations")
+

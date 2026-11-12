@@ -7,6 +7,7 @@ from app.core.bootstrap import init_db_tables, bootstrap_initial_admin
 from app.routers.auth import router as auth_router
 from app.routers.admin import router as admin_router
 from app.routers.farmer import router as farmer_router
+from app.routers.cadastral import router as cadastral_router
 
 
 @asynccontextmanager
@@ -45,6 +46,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(farmer_router)
+app.include_router(cadastral_router)
 
 
 @app.get("", tags=["Root"], include_in_schema=False)
@@ -64,6 +66,7 @@ async def root():
             "auth": "/api/auth",
             "admin": "/api/admin",
             "farmer": "/api/farmer",
+            "cadastral": "/api/cadastral",
         }
     }
 

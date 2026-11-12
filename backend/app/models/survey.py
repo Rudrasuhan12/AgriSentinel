@@ -54,3 +54,4 @@ class UAVSurvey(Base):
     # Relationships
     parcel: Mapped[FarmerParcel] = relationship("FarmerParcel", back_populates="surveys")
     reconstruction: Mapped[Optional[HeapReconstruction]] = relationship("HeapReconstruction", back_populates="survey", uselist=False)
+

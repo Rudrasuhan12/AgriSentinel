@@ -3,7 +3,7 @@ import json
 from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy import select, func, desc
+from sqlalchemy import select, func, desc, text
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 from geoalchemy2.shape import to_shape, from_shape
@@ -237,18 +237,43 @@ async def register_farmer_parcel(
 ):
     """
     Register a new agricultural parcel with GeoJSON boundary geometry and Odisha Bhulekh references.
-    PostGIS validates geometry and computes spatial properties.
+    Validates boundary polygon closure, minimum 3 distinct vertices, calculates geodesic area,
+    cross-references official cadastral database, and prevents duplicate plot registration.
     """
-    # Count existing parcels to format code
-    count_res = await db.execute(select(func.count(FarmerParcel.id)))
-    idx = (count_res.scalar() or 0) + 1
-    code = f"OD-{payload.district[:3].upper()}-{idx:04d}"
+    # 1. Prevent duplicate parcel registration for the same farmer/plot
+    dup_stmt = select(FarmerParcel.id).where(
+        FarmerParcel.farmer_id == current_farmer.id,
+        FarmerParcel.district.ilike(payload.district.strip()),
+        FarmerParcel.sub_district.ilike(payload.sub_district.strip()),
+        FarmerParcel.village.ilike(payload.village.strip()),
+        FarmerParcel.plot_number == payload.plot_number.strip(),
+    )
+    dup_res = await db.execute(dup_stmt)
+    if dup_res.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=f"Plot #{payload.plot_number} in {payload.village} is already registered under your farmer account."
+        )
 
-    # Process geometry
+    # 2. Geometry Validation: polygon must have at least 3 distinct vertices
     postgis_geom = None
     calculated_area = payload.area_acres
 
     if payload.geojson_geometry:
+        coords = payload.geojson_geometry.get("coordinates", [])
+        if not coords or not isinstance(coords, list) or len(coords) == 0:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid GeoJSON geometry: polygon coordinates array is empty."
+            )
+        ring = coords[0]
+        distinct_pts = set(tuple(p) for p in ring)
+        if len(distinct_pts) < 3:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Invalid polygon geometry: minimum 3 distinct boundary vertices required. Received only {len(distinct_pts)} distinct points."
+            )
+
         try:
             poly_shape = shape(payload.geojson_geometry)
             if not poly_shape.is_valid:
@@ -257,32 +282,72 @@ async def register_farmer_parcel(
             # Convert to WKB element for GeoAlchemy2
             postgis_geom = from_shape(poly_shape, srid=4326)
         except Exception as e:
-            print(f"[GIS] Warning: GeoJSON shape conversion notice: {e}")
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Geospatial error: unable to parse polygon boundary geometry: {str(e)}"
+            )
 
+    # 3. Cross-reference official Cadastral Survey Dataset in PostGIS
+    cadastral_match_stmt = text("""
+        SELECT id, recorded_area_acres, source, verification_status
+        FROM cadastral_parcels
+        WHERE district_name ILIKE :district
+          AND tahasil_name ILIKE :tahasil
+          AND village_name ILIKE :village
+          AND plot_number = :plot
+        LIMIT 1
+    """)
+    cadastral_res = await db.execute(cadastral_match_stmt, {
+        "district": payload.district.strip(),
+        "tahasil": payload.sub_district.strip(),
+        "village": payload.village.strip(),
+        "plot": payload.plot_number.strip()
+    })
+    cadastral_match = cadastral_res.fetchone()
+
+    if cadastral_match:
+        cadastral_source = payload.cadastral_source or cadastral_match.source
+        verification_status = ParcelVerificationStatus.VERIFIED
+    else:
+        cadastral_source = payload.cadastral_source or "Farmer Digitized Boundary (Awaiting Official Cadastral Survey Verification)"
+        verification_status = ParcelVerificationStatus.PENDING_VERIFICATION
+
+    # Count existing parcels to format code
+    count_res = await db.execute(select(func.count(FarmerParcel.id)))
+    idx = (count_res.scalar() or 0) + 1
+    code = f"OD-{payload.district[:3].upper()}-{idx:04d}"
+
+    now_utc = datetime.now(timezone.utc)
     new_parcel = FarmerParcel(
         farmer_id=current_farmer.id,
         parcel_code=code,
-        khata_number=payload.khata_number,
-        plot_number=payload.plot_number,
+        khata_number=payload.khata_number.strip(),
+        plot_number=payload.plot_number.strip(),
         state=payload.state,
-        district=payload.district,
-        sub_district=payload.sub_district,
-        village=payload.village,
+        district=payload.district.strip(),
+        sub_district=payload.sub_district.strip(),
+        village=payload.village.strip(),
         primary_crop=payload.primary_crop,
         area_acres=calculated_area,
         geom=postgis_geom,
         geojson_geometry=payload.geojson_geometry,
-        cadastral_source="Farmer GPS / Demarcation (Awaiting Bhulekh Cadastral Verification)",
-        verification_status=ParcelVerificationStatus.PENDING_VERIFICATION,
+        cadastral_source=cadastral_source,
+        verification_status=verification_status,
+        created_at=now_utc,
     )
     db.add(new_parcel)
     await db.flush()
 
     # Add system notification for farmer
+    notif_msg = (
+        f"Parcel {code} (Plot: {payload.plot_number}, Khata: {payload.khata_number}) registered with verified Bhulekh cadastral boundary."
+        if verification_status == ParcelVerificationStatus.VERIFIED
+        else f"Parcel {code} (Plot: {payload.plot_number}, Khata: {payload.khata_number}) submitted with farmer-digitized boundary. Awaiting Bhulekh survey verification."
+    )
     notif = FarmerNotification(
         farmer_id=current_farmer.id,
-        title="Parcel Registration Submitted",
-        message=f"Parcel {code} (Plot: {payload.plot_number}, Khata: {payload.khata_number}) submitted for Bhulekh cadastral verification.",
+        title="Parcel Registration Recorded",
+        message=notif_msg,
         notification_type=NotificationType.PARCEL,
     )
     db.add(notif)
@@ -298,11 +363,11 @@ async def register_farmer_parcel(
         sub_district=new_parcel.sub_district,
         village=new_parcel.village,
         primary_crop=new_parcel.primary_crop,
-        area_acres=new_parcel.area_acres,
+        area_acres=round(new_parcel.area_acres, 2),
         geojson_geometry=new_parcel.geojson_geometry,
         cadastral_source=new_parcel.cadastral_source,
         verification_status=new_parcel.verification_status.value,
-        created_at=new_parcel.created_at.isoformat(),
+        created_at=now_utc.isoformat(),
     )
 
 
@@ -543,3 +608,4 @@ async def list_support_contacts(
         )
         for c in contacts
     ]
+

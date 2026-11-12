@@ -22,3 +22,4 @@ class SupportContact(Base):
     email: Mapped[Optional[str]] = mapped_column(String(150), nullable=True)
     office_address: Mapped[str] = mapped_column(String(255))
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
+

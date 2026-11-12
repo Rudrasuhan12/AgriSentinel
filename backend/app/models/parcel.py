@@ -69,3 +69,4 @@ class FarmerParcel(Base):
     observations: Mapped[List[SatelliteObservation]] = relationship("SatelliteObservation", back_populates="parcel", cascade="all, delete-orphan")
     surveys: Mapped[List[UAVSurvey]] = relationship("UAVSurvey", back_populates="parcel", cascade="all, delete-orphan")
     certificates: Mapped[List[YieldCertificate]] = relationship("YieldCertificate", back_populates="parcel")
+

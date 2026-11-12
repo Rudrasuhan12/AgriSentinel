@@ -25,6 +25,7 @@ class ParcelCreateRequest(BaseModel):
     primary_crop: str = "Paddy (Swarna MTU)"
     area_acres: float = Field(..., gt=0.0, description="Field Area in Acres")
     geojson_geometry: Optional[Dict[str, Any]] = None # GeoJSON Polygon Feature or Geometry
+    cadastral_source: Optional[str] = None
 
 
 class ParcelResponse(BaseModel):
@@ -139,3 +140,4 @@ class FarmerDashboardSummaryResponse(BaseModel):
     has_surveys: bool = False
     has_reconstructions: bool = False
     has_certificates: bool = False
+

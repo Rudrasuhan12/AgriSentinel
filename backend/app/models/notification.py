@@ -44,3 +44,4 @@ class FarmerNotification(Base):
 
     # Relationships
     farmer: Mapped[User] = relationship("User", back_populates="notifications")
+
