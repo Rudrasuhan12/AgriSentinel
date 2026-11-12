@@ -1125,7 +1125,7 @@ export const FarmerDashboard: React.FC = () => {
                       <div className="p-3 rounded-xl bg-[#F7F9F8] border border-[#E2E9E4]">
                         <span className="text-[10px] text-slate-500 uppercase block">Reconstructed Volume</span>
                         <div className="text-xl font-bold text-[#008C45] mt-0.5">
-                          {summary?.estimated_volume_m3 || 128.40} <span className="text-xs font-normal">m³</span>
+                          {currentEstimatedVolume} <span className="text-xs font-normal">m³</span>
                         </div>
                         <span className="text-[9px] text-slate-400">Uncertainty: ±1.40%</span>
                       </div>
@@ -1133,7 +1133,7 @@ export const FarmerDashboard: React.FC = () => {
                       <div className="p-3 rounded-xl bg-[#F7F9F8] border border-[#E2E9E4]">
                         <span className="text-[10px] text-slate-500 uppercase block">Bulk Density (ρ)</span>
                         <div className="text-xl font-bold text-[#172B22] mt-0.5">
-                          578.0 <span className="text-xs font-normal">kg/m³</span>
+                          {latestRecon?.bulk_density_kg_per_m3 || 578.0} <span className="text-xs font-normal">kg/m³</span>
                         </div>
                         <span className="text-[9px] text-emerald-600 font-sans">Swarna standard @ 14%</span>
                       </div>
@@ -1141,9 +1141,9 @@ export const FarmerDashboard: React.FC = () => {
                       <div className="p-3 rounded-xl bg-[#F7F9F8] border border-[#E2E9E4]">
                         <span className="text-[10px] text-slate-500 uppercase block">Total Mass (Quintals)</span>
                         <div className="text-xl font-bold text-[#008C45] mt-0.5">
-                          {summary?.estimated_mass_quintals || 742.15} <span className="text-xs font-normal">Q</span>
+                          {currentEstimatedMass} <span className="text-xs font-normal">Q</span>
                         </div>
-                        <span className="text-[9px] text-slate-400">74.22 Metric Tonnes</span>
+                        <span className="text-[9px] text-slate-400">{(currentEstimatedMass / 10).toFixed(2)} Metric Tonnes</span>
                       </div>
 
                       <div className="p-3 rounded-xl bg-[#F7F9F8] border border-[#E2E9E4]">
