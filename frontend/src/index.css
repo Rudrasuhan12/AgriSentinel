@@ -1,0 +1,120 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    color-scheme: dark;
+  }
+  
+  body {
+    background-color: #080d0a;
+    color: #f7f4ed;
+    overflow-x: hidden;
+  }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #0d1410;
+}
+::-webkit-scrollbar-thumb {
+  background: #1c3829;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2b543d;
+}
+
+/* Radar scanning keyframes */
+@keyframes radar-sweep {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes scanline {
+  0% {
+    top: -5%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.8;
+  }
+  85% {
+    opacity: 0.8;
+  }
+  100% {
+    top: 105%;
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 0.2;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.45;
+    transform: scale(1.05);
+  }
+}
+
+.animate-radar {
+  animation: radar-sweep 12s linear infinite;
+}
+
+.animate-scanline {
+  animation: scanline 4s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 6s ease-in-out infinite;
+}
+
+/* Glassmorphism helpers */
+.glass-panel {
+  background: rgba(16, 29, 22, 0.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(184, 238, 59, 0.08);
+}
+
+.glass-panel-subtle {
+  background: rgba(12, 20, 16, 0.45);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.glass-panel-hover {
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.glass-panel-hover:hover {
+  background: rgba(20, 36, 27, 0.8);
+  border-color: rgba(184, 238, 59, 0.22);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 32px -8px rgba(0, 0, 0, 0.6), 0 0 20px -5px rgba(184, 238, 59, 0.12);
+}
+
+/* Grid overlay background */
+.bg-geo-grid {
+  background-size: 36px 36px;
+  background-image: 
+    linear-gradient(to right, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+}
+
+.bg-geo-dots {
+  background-image: radial-gradient(rgba(184, 238, 59, 0.1) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
