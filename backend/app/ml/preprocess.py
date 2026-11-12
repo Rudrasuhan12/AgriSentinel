@@ -2,7 +2,6 @@ import os
 import cv2
 import numpy as np
 from typing import List, Tuple, Dict, Any
-from sklearn.model_selection import GroupShuffleSplit
 
 
 def compute_excess_green_index(image_bgr: np.ndarray) -> np.ndarray:
@@ -76,23 +75,42 @@ def split_dataset_by_field_group(
     Guarantees that patches or frames from the same field never appear in both train and test splits,
     preventing spatial data leakage.
     """
-    gss = GroupShuffleSplit(n_splits=1, train_size=train_size, random_state=random_state)
-    train_idx, temp_idx = next(gss.split(sample_ids, groups=field_groups))
+    try:
+        from sklearn.model_selection import GroupShuffleSplit
+        gss = GroupShuffleSplit(n_splits=1, train_size=train_size, random_state=random_state)
+        train_idx, temp_idx = next(gss.split(sample_ids, groups=field_groups))
 
-    # Split remaining into val and test
-    val_ratio_in_temp = val_size / (1.0 - train_size)
-    temp_ids = [sample_ids[i] for i in temp_idx]
-    temp_groups = [field_groups[i] for i in temp_idx]
+        # Split remaining into val and test
+        val_ratio_in_temp = val_size / (1.0 - train_size)
+        temp_ids = [sample_ids[i] for i in temp_idx]
+        temp_groups = [field_groups[i] for i in temp_idx]
 
-    gss_val = GroupShuffleSplit(n_splits=1, train_size=val_ratio_in_temp, random_state=random_state)
-    val_sub_idx, test_sub_idx = next(gss_val.split(temp_ids, groups=temp_groups))
+        gss_val = GroupShuffleSplit(n_splits=1, train_size=val_ratio_in_temp, random_state=random_state)
+        val_sub_idx, test_sub_idx = next(gss_val.split(temp_ids, groups=temp_groups))
 
-    val_idx = temp_idx[val_sub_idx]
-    test_idx = temp_idx[test_sub_idx]
+        val_idx = temp_idx[val_sub_idx]
+        test_idx = temp_idx[test_sub_idx]
 
-    return {
-        "train": train_idx.tolist(),
-        "val": val_idx.tolist(),
-        "test": test_idx.tolist()
-    }
+        return {
+            "train": train_idx.tolist(),
+            "val": val_idx.tolist(),
+            "test": test_idx.tolist()
+        }
+    except ImportError:
+        # Fallback to pure python/numpy group splitting if scikit-learn is not installed
+        unique_groups = list(dict.fromkeys(field_groups))
+        rng = np.random.default_rng(random_state)
+        rng.shuffle(unique_groups)
+        n_groups = len(unique_groups)
+        n_train = max(1, int(n_groups * train_size))
+        n_val = max(1, int(n_groups * val_size))
+        
+        train_groups = set(unique_groups[:n_train])
+        val_groups = set(unique_groups[n_train:n_train + n_val])
+        test_groups = set(unique_groups[n_train + n_val:])
+        
+        train_idx = [i for i, g in enumerate(field_groups) if g in train_groups]
+        val_idx = [i for i, g in enumerate(field_groups) if g in val_groups]
+        test_idx = [i for i, g in enumerate(field_groups) if g in test_groups]
+        return {"train": train_idx, "val": val_idx, "test": test_idx}
 
