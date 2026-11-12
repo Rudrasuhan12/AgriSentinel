@@ -75,55 +75,27 @@ def split_dataset_by_field_group(
     random_state: int = 42
 ) -> Dict[str, List[int]]:
     """
-    Splits samples using GroupShuffleSplit based on field/scene identifier.
+    Splits samples based on field/scene identifier.
     Guarantees that patches or frames from the same field never appear in both train and test splits,
     preventing spatial data leakage.
+    Implemented with deterministic NumPy group splitting to ensure zero external typing discrepancies.
     """
-    try:
-        from sklearn.model_selection import GroupShuffleSplit
-        if len(set(field_groups)) < 3:
-            raise ValueError("Too few groups for multi-way GroupShuffleSplit")
+    unique_groups = list(dict.fromkeys(field_groups))
+    rng = np.random.default_rng(random_state)
+    shuffled_groups = unique_groups.copy()
+    rng.shuffle(shuffled_groups)
 
-        x_arr = np.array(sample_ids)
-        groups_arr = np.array(field_groups)
-        gss = GroupShuffleSplit(n_splits=1, train_size=train_size, random_state=random_state)
-        train_idx, temp_idx = next(gss.split(x_arr, groups=groups_arr))
+    n_groups = len(shuffled_groups)
+    n_train = max(1, int(n_groups * train_size))
+    n_val = max(1, int(n_groups * val_size)) if (n_groups - n_train) > 1 else 0
 
-        # Split remaining into val and test
-        val_ratio_in_temp = val_size / (1.0 - train_size)
-        temp_ids = [sample_ids[i] for i in temp_idx]
-        temp_groups = [field_groups[i] for i in temp_idx]
-        if len(set(temp_groups)) < 2:
-            raise ValueError("Too few groups in validation/test slice")
+    train_groups = set(shuffled_groups[:n_train])
+    val_groups = set(shuffled_groups[n_train:n_train + n_val])
+    test_groups = set(shuffled_groups[n_train + n_val:])
 
-        gss_val = GroupShuffleSplit(n_splits=1, train_size=val_ratio_in_temp, random_state=random_state)
-        temp_x_arr = np.array(temp_ids)
-        temp_groups_arr = np.array(temp_groups)
-        val_sub_idx, test_sub_idx = next(gss_val.split(temp_x_arr, groups=temp_groups_arr))
+    train_idx = [i for i, g in enumerate(field_groups) if g in train_groups]
+    val_idx = [i for i, g in enumerate(field_groups) if g in val_groups]
+    test_idx = [i for i, g in enumerate(field_groups) if g in test_groups]
 
-        val_idx = temp_idx[val_sub_idx]
-        test_idx = temp_idx[test_sub_idx]
-
-        return {
-            "train": train_idx.tolist(),
-            "val": val_idx.tolist(),
-            "test": test_idx.tolist()
-        }
-    except (ImportError, ValueError, Exception):
-        # Fallback to pure python/numpy group splitting if scikit-learn is not installed
-        unique_groups = list(dict.fromkeys(field_groups))
-        rng = np.random.default_rng(random_state)
-        rng.shuffle(unique_groups)
-        n_groups = len(unique_groups)
-        n_train = max(1, int(n_groups * train_size))
-        n_val = max(1, int(n_groups * val_size))
-        
-        train_groups = set(unique_groups[:n_train])
-        val_groups = set(unique_groups[n_train:n_train + n_val])
-        test_groups = set(unique_groups[n_train + n_val:])
-        
-        train_idx = [i for i, g in enumerate(field_groups) if g in train_groups]
-        val_idx = [i for i, g in enumerate(field_groups) if g in val_groups]
-        test_idx = [i for i, g in enumerate(field_groups) if g in test_groups]
-        return {"train": train_idx, "val": val_idx, "test": test_idx}
+    return {"train": train_idx, "val": val_idx, "test": test_idx}
 
