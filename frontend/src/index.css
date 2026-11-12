@@ -5,12 +5,12 @@
 @layer base {
   html {
     scroll-behavior: smooth;
-    color-scheme: dark;
+    color-scheme: light;
   }
   
   body {
-    background-color: #080d0a;
-    color: #f7f4ed;
+    background-color: #F7F9F8;
+    color: #172B22;
     overflow-x: hidden;
   }
 }
@@ -18,16 +18,17 @@
 /* Custom scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
+  height: 8px;
 }
 ::-webkit-scrollbar-track {
-  background: #0d1410;
+  background: #F1F5F3;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1c3829;
+  background: #CBD5E1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #2b543d;
+  background: #94A3B8;
 }
 
 /* Radar scanning keyframes */

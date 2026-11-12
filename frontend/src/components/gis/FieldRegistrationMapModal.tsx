@@ -209,11 +209,11 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs">
-      <div className="bg-white w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh]">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs" style={{ colorScheme: 'light' }}>
+      <div className="bg-white text-[#172B22] w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[92vh] border border-[#E2E9E4]">
         
         {/* Header */}
-        <div className="p-4 sm:p-5 border-b border-[#E2E9E4] flex items-center justify-between">
+        <div className="p-4 sm:p-5 border-b border-[#E2E9E4] flex items-center justify-between bg-white">
           <div>
             <h3 className="font-display font-bold text-lg text-[#172B22]">
               Register Cadastral Parcel on Satellite GIS
@@ -222,7 +222,11 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
               Click points on the satellite basemap to delineate your agricultural boundary, then record land registry details.
             </p>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg border border-[#E2E9E4] hover:bg-slate-50 text-slate-500">
+          <button 
+            type="button"
+            onClick={onClose} 
+            className="p-1.5 rounded-lg border border-[#E2E9E4] bg-white hover:bg-slate-50 text-slate-500 hover:text-slate-700 cursor-pointer transition-colors"
+          >
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -234,10 +238,10 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
           </div>
         )}
 
-        <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 gap-0">
+        <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 gap-0 bg-white">
           
           {/* Left Column: Form Details */}
-          <form onSubmit={handleSubmit} className="lg:col-span-5 p-5 space-y-3.5 text-xs border-r border-[#E2E9E4]">
+          <form onSubmit={handleSubmit} className="lg:col-span-5 p-5 space-y-3.5 text-xs border-r border-[#E2E9E4] bg-white">
             
             <div className="grid grid-cols-2 gap-3">
               <div>
@@ -250,7 +254,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
                   value={khataNumber}
                   onChange={(e) => setKhataNumber(e.target.value)}
                   placeholder="e.g. 204/12"
-                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-[#008C45]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] bg-white text-[#172B22] placeholder:text-slate-400 text-xs font-medium focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all shadow-2xs"
                 />
               </div>
 
@@ -264,7 +268,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
                   value={plotNumber}
                   onChange={(e) => setPlotNumber(e.target.value)}
                   placeholder="e.g. 892"
-                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-[#008C45]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] bg-white text-[#172B22] placeholder:text-slate-400 text-xs font-medium focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all shadow-2xs"
                 />
               </div>
             </div>
@@ -279,7 +283,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
                   required
                   value={district}
                   onChange={(e) => setDistrict(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-[#008C45]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] bg-white text-[#172B22] placeholder:text-slate-400 text-xs font-medium focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all shadow-2xs"
                 />
               </div>
 
@@ -292,7 +296,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
                   required
                   value={subDistrict}
                   onChange={(e) => setSubDistrict(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-[#008C45]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] bg-white text-[#172B22] placeholder:text-slate-400 text-xs font-medium focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all shadow-2xs"
                 />
               </div>
             </div>
@@ -307,7 +311,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
                   required
                   value={village}
                   onChange={(e) => setVillage(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-[#008C45]"
+                  className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] bg-white text-[#172B22] placeholder:text-slate-400 text-xs font-medium focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all shadow-2xs"
                 />
               </div>
 
@@ -322,7 +326,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
                   value={enteredArea}
                   onChange={(e) => setEnteredArea(e.target.value)}
                   placeholder="e.g. 2.50"
-                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-[#008C45] font-mono"
+                  className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] bg-white text-[#172B22] placeholder:text-slate-400 text-xs font-mono font-medium focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all shadow-2xs"
                 />
               </div>
             </div>
@@ -334,24 +338,24 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
               <select
                 value={crop}
                 onChange={(e) => setCrop(e.target.value)}
-                className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:outline-none focus:border-[#008C45]"
+                className="w-full px-3 py-2 rounded-xl border border-[#CBD5E1] bg-white text-[#172B22] text-xs font-medium focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all shadow-2xs cursor-pointer"
               >
-                <option value="Paddy (Swarna MTU)">Paddy (Swarna MTU-7029)</option>
-                <option value="Paddy (Pooja CR-1018)">Paddy (Pooja CR-1018)</option>
-                <option value="Paddy (Sambha Mahsuri)">Paddy (Sambha Mahsuri)</option>
-                <option value="Pulses (Moong / Biri)">Pulses (Moong / Biri)</option>
+                <option value="Paddy (Swarna MTU)" className="bg-white text-[#172B22]">Paddy (Swarna MTU-7029)</option>
+                <option value="Paddy (Pooja CR-1018)" className="bg-white text-[#172B22]">Paddy (Pooja CR-1018)</option>
+                <option value="Paddy (Sambha Mahsuri)" className="bg-white text-[#172B22]">Paddy (Sambha Mahsuri)</option>
+                <option value="Pulses (Moong / Biri)" className="bg-white text-[#172B22]">Pulses (Moong / Biri)</option>
               </select>
             </div>
 
             {/* Boundary Vertices Stats */}
-            <div className="p-3 rounded-xl bg-[#F7F9F8] border border-[#E2E9E4] text-[11px] font-mono text-[#64746A] space-y-1">
-              <div className="flex justify-between">
+            <div className="p-3.5 rounded-xl bg-[#F7F9F8] border border-[#E2E9E4] text-[11px] font-mono text-[#64746A] space-y-1.5">
+              <div className="flex justify-between items-center">
                 <span>Boundary Vertices:</span>
-                <strong className="text-[#172B22]">{polygonCoords.length} points</strong>
+                <strong className="text-[#172B22] font-semibold">{polygonCoords.length} points</strong>
               </div>
-              <div className="flex justify-between">
+              <div className="flex justify-between items-center">
                 <span>Calculated Geodesic Area:</span>
-                <strong className="text-[#008C45]">{calculatedAreaAcres} Acres</strong>
+                <strong className="text-[#008C45] font-bold">{calculatedAreaAcres} Acres</strong>
               </div>
             </div>
 
@@ -360,7 +364,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
                 type="button"
                 onClick={handleResetDrawing}
                 disabled={polygonCoords.length === 0}
-                className="px-3 py-2 rounded-xl border border-[#E2E9E4] text-slate-600 hover:bg-slate-50 flex items-center gap-1.5 disabled:opacity-40"
+                className="px-3 py-2 rounded-xl border border-[#E2E9E4] bg-white text-slate-600 hover:bg-slate-50 flex items-center gap-1.5 disabled:opacity-40 cursor-pointer shadow-2xs transition-all"
               >
                 <Undo className="w-3.5 h-3.5" />
                 <span>Reset Map</span>
@@ -369,7 +373,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
               <button
                 type="submit"
                 disabled={submitting}
-                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#008C45] to-[#006B36] text-white font-semibold flex items-center gap-1.5 shadow-xs disabled:opacity-50"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#008C45] to-[#006B36] hover:from-[#007a3c] hover:to-[#005c2e] text-white font-semibold flex items-center gap-1.5 shadow-xs disabled:opacity-50 cursor-pointer transition-all"
               >
                 {submitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                 <span>Save to PostGIS</span>
