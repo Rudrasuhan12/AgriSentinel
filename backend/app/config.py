@@ -1,6 +1,7 @@
-from typing import List
+import json
+from typing import List, Any
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
+from pydantic import Field, field_validator
 
 
 class Settings(BaseSettings):
@@ -32,11 +33,30 @@ class Settings(BaseSettings):
     # Server & Networking
     BACKEND_HOST: str = "127.0.0.1"
     BACKEND_PORT: int = 8000
-    CORS_ORIGINS: List[str] = [
+    CORS_ORIGINS: Any = [
         "http://localhost:5173",
         "http://127.0.0.1:5173",
         "http://localhost:3000"
     ]
+
+    @field_validator("CORS_ORIGINS", mode="after")
+    @classmethod
+    def assemble_cors_origins(cls, v: Any) -> List[str]:
+        if isinstance(v, str):
+            val = v.strip()
+            if not val or val == "*":
+                return ["*"]
+            if val.startswith("[") and val.endswith("]"):
+                try:
+                    parsed = json.loads(val)
+                    if isinstance(parsed, list):
+                        return [str(item) for item in parsed]
+                except Exception:
+                    pass
+            return [x.strip() for x in val.split(",") if x.strip()]
+        elif isinstance(v, (list, tuple)):
+            return [str(item) for item in v]
+        return ["*"]
 
     # Uploads directory
     UPLOAD_DIR: str = "uploads"
