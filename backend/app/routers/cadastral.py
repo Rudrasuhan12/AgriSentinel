@@ -246,3 +246,4 @@ async def lookup_cadastral_parcel(
         surrounding_parcels=surrounding_parcels,
         message=f"Cadastral plot #{matched_row.plot_number} successfully resolved from official cadastral survey records."
     )
+

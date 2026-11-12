@@ -12,26 +12,18 @@ import {
   Layers, 
   ShieldCheck, 
   AlertTriangle,
-  MapPin,
-  CheckCircle2
+  CheckCircle2,
+  Crosshair,
+  Trash2
 } from 'lucide-react';
 import { api } from '../../api/client';
+import { AdministrativeHierarchySelector } from './AdministrativeHierarchySelector';
 
 interface FieldRegistrationMapModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
   defaultDistrict?: string;
-}
-
-interface DistrictOption {
-  name: string;
-  code?: string;
-  tahasils: {
-    name: string;
-    code?: string;
-    villages: string[];
-  }[];
 }
 
 interface CadastralLookupResult {
@@ -80,10 +72,6 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
   onSuccess,
   defaultDistrict = 'Cuttack',
 }) => {
-  // Administrative Hierarchy from Backend
-  const [districtsList, setDistrictsList] = useState<DistrictOption[]>([]);
-  const [hierarchyLoading, setHierarchyLoading] = useState(false);
-
   // Form selections
   const [state] = useState('Odisha');
   const [district, setDistrict] = useState(defaultDistrict);
@@ -123,63 +111,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
   const surroundingGroupRef = useRef<L.FeatureGroup | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
 
-  // 1. Fetch Authoritative Administrative Hierarchy on Modal Open
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const fetchHierarchy = async () => {
-      try {
-        setHierarchyLoading(true);
-        const data = await api.get<{ state: string; districts: DistrictOption[] }>('/api/cadastral/hierarchy');
-        if (data && data.districts && data.districts.length > 0) {
-          setDistrictsList(data.districts);
-          
-          // Match default district or first
-          const matchedDist = data.districts.find(d => d.name.toLowerCase() === defaultDistrict.toLowerCase()) || data.districts[0];
-          setDistrict(matchedDist.name);
-          if (matchedDist.tahasils.length > 0) {
-            setSubDistrict(matchedDist.tahasils[0].name);
-            if (matchedDist.tahasils[0].villages.length > 0) {
-              setVillage(matchedDist.tahasils[0].villages[0]);
-            }
-          }
-        }
-      } catch (err) {
-        console.warn('[GIS] Failed to load dynamic administrative hierarchy, using defaults:', err);
-      } finally {
-        setHierarchyLoading(false);
-      }
-    };
-
-    fetchHierarchy();
-  }, [isOpen, defaultDistrict]);
-
-  // Derived Tahasils and Villages for dependent dropdowns
-  const currentDistrictObj = districtsList.find(d => d.name === district);
-  const currentTahasils = currentDistrictObj ? currentDistrictObj.tahasils : [];
-  const currentTahasilObj = currentTahasils.find(t => t.name === subDistrict);
-  const currentVillages = currentTahasilObj ? currentTahasilObj.villages : [];
-
-  const handleDistrictChange = (newDist: string) => {
-    setDistrict(newDist);
-    const dObj = districtsList.find(d => d.name === newDist);
-    if (dObj && dObj.tahasils.length > 0) {
-      setSubDistrict(dObj.tahasils[0].name);
-      if (dObj.tahasils[0].villages.length > 0) {
-        setVillage(dObj.tahasils[0].villages[0]);
-      }
-    }
-  };
-
-  const handleTahasilChange = (newTahasil: string) => {
-    setSubDistrict(newTahasil);
-    const tObj = currentTahasils.find(t => t.name === newTahasil);
-    if (tObj && tObj.villages.length > 0) {
-      setVillage(tObj.villages[0]);
-    }
-  };
-
-  // 2. Initialize Leaflet Map
+  // 1. Initialize Leaflet Map
   useEffect(() => {
     if (!isOpen) return;
 
@@ -258,7 +190,49 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
     }
   };
 
-  // 3. Cadastral Spatial Lookup Function
+  // Locate Farmer's Live GPS Position
+  const handleLocateGPS = () => {
+    if (!navigator.geolocation) {
+      alert('Geolocation is not supported by your browser.');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = pos.coords.latitude;
+        const lng = pos.coords.longitude;
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.setView([lat, lng], 17);
+          L.circleMarker([lat, lng], {
+            radius: 8,
+            color: '#ffffff',
+            fillColor: '#3B82F6',
+            fillOpacity: 0.9,
+            weight: 2,
+          })
+            .addTo(mapInstanceRef.current)
+            .bindPopup('Your Current GPS Location')
+            .openPopup();
+        }
+      },
+      (err) => {
+        alert('Could not retrieve GPS coordinates: ' + err.message);
+      }
+    );
+  };
+
+  // Undo Last Vertex
+  const handleUndoVertex = () => {
+    setPolygonCoords((prev) => {
+      if (prev.length === 0) return prev;
+      const next = prev.slice(0, -1);
+      if (mapInstanceRef.current) {
+        updateMapDrawings(next, mapInstanceRef.current);
+      }
+      return next;
+    });
+  };
+
+  // 2. Cadastral Spatial Lookup Function
   const handleCadastralLookup = async () => {
     setError(null);
     setLookupMessage(null);
@@ -390,7 +364,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
     }
   };
 
-  // 4. Update Map Drawings during Manual Digitization
+  // 3. Update Map Drawings during Manual Digitization
   const updateMapDrawings = (coords: [number, number][], map: L.Map) => {
     setIsOfficialCadastral(false);
     setCadastralSource('Farmer Digitized Boundary (Awaiting Official Cadastral Survey Verification)');
@@ -420,10 +394,10 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
 
     if (coords.length >= 3) {
       const poly = L.polygon(coords, {
-        color: '#38ef7d',
-        fillColor: '#008C45',
+        color: '#00A86B',
+        fillColor: '#00E676',
         fillOpacity: 0.35,
-        weight: 2.5,
+        weight: 3,
       }).addTo(map);
       drawnPolygonRef.current = poly;
 
@@ -475,7 +449,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
     }
   };
 
-  // 5. Submit Parcel to PostGIS
+  // 4. Submit Parcel to PostGIS
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -599,73 +573,21 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
           {/* Left Column: Form Details & Cadastral Controls */}
           <form onSubmit={handleSubmit} className="lg:col-span-5 p-5 space-y-3.5 text-xs border-r border-[#E2E9E4] bg-white overflow-y-auto">
             
-            {/* Step 1: Administrative Location Dropdowns */}
-            <div className="space-y-2 pb-3 border-b border-[#E2E9E4]">
-              <div className="flex items-center justify-between">
-                <span className="text-[11px] font-mono uppercase font-bold text-[#172B22] flex items-center gap-1">
-                  <MapPin className="w-3.5 h-3.5 text-[#008C45]" />
-                  1. Administrative Hierarchy
-                </span>
-                <span className="text-[10px] text-slate-500">State: Odisha</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2.5">
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-semibold text-[#64746A] mb-1">
-                    DISTRICT
-                  </label>
-                  <select
-                    value={district}
-                    onChange={(e) => handleDistrictChange(e.target.value)}
-                    disabled={hierarchyLoading || districtsList.length === 0}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#172B22] text-xs font-medium focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 cursor-pointer shadow-2xs"
-                  >
-                    {districtsList.map((d) => (
-                      <option key={d.name} value={d.name}>{d.name}</option>
-                    ))}
-                    {districtsList.length === 0 && <option value="Cuttack">Cuttack</option>}
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-mono uppercase font-semibold text-[#64746A] mb-1">
-                    TAHASIL / BLOCK
-                  </label>
-                  <select
-                    value={subDistrict}
-                    onChange={(e) => handleTahasilChange(e.target.value)}
-                    className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#172B22] text-xs font-medium focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 cursor-pointer shadow-2xs"
-                  >
-                    {currentTahasils.map((t) => (
-                      <option key={t.name} value={t.name}>{t.name}</option>
-                    ))}
-                    {currentTahasils.length === 0 && <option value="Baranga">Baranga</option>}
-                  </select>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[10px] font-mono uppercase font-semibold text-[#64746A] mb-1">
-                  VILLAGE (MOUZA)
-                </label>
-                <select
-                  value={village}
-                  onChange={(e) => setVillage(e.target.value)}
-                  className="w-full px-2.5 py-1.5 rounded-lg border border-[#CBD5E1] bg-white text-[#172B22] text-xs font-medium focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 cursor-pointer shadow-2xs"
-                >
-                  {currentVillages.map((v) => (
-                    <option key={v} value={v}>{v}</option>
-                  ))}
-                  {currentVillages.length === 0 && <option value="Mundali">Mundali</option>}
-                </select>
-              </div>
-            </div>
+            {/* Step 1: Database-Backed Administrative Hierarchy Selector (All 30 Odisha Districts) */}
+            <AdministrativeHierarchySelector
+              selectedDistrict={district}
+              selectedTahasil={subDistrict}
+              selectedVillage={village}
+              onDistrictChange={setDistrict}
+              onTahasilChange={setSubDistrict}
+              onVillageChange={setVillage}
+            />
 
             {/* Step 2: Cadastral Identifiers & Lookup */}
             <div className="space-y-2.5 pb-3 border-b border-[#E2E9E4]">
               <span className="text-[11px] font-mono uppercase font-bold text-[#172B22] flex items-center gap-1">
                 <Search className="w-3.5 h-3.5 text-[#008C45]" />
-                2. Land Record Identifiers
+                Land Record Identifiers
               </span>
 
               <div className="grid grid-cols-2 gap-2.5">
@@ -723,7 +645,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
             <div className="space-y-2.5 pb-2">
               <span className="text-[11px] font-mono uppercase font-bold text-[#172B22] flex items-center gap-1">
                 <Compass className="w-3.5 h-3.5 text-[#008C45]" />
-                3. Crop & Cadastral Area
+                Crop & Cadastral Area
               </span>
 
               <div className="grid grid-cols-2 gap-2.5">
@@ -764,7 +686,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
                 <div className="p-2.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-[11px] flex items-center gap-2">
                   <AlertTriangle className="w-3.5 h-3.5 shrink-0 text-amber-600" />
                   <span>
-                    Area Discrepancy: Entered {enteredArea} Ac differs from recorded {officialRecordedArea} Ac.
+                    Area Notice: Entered {enteredArea} Ac differs from official recorded {officialRecordedArea} Ac.
                   </span>
                 </div>
               )}
@@ -790,23 +712,47 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="pt-2 flex items-center justify-between gap-2 border-t border-[#E2E9E4]">
-              <button
-                type="button"
-                onClick={handleResetDrawing}
-                disabled={polygonCoords.length === 0}
-                className="px-3 py-2 rounded-xl border border-[#E2E9E4] bg-white text-slate-600 hover:bg-slate-50 flex items-center gap-1.5 disabled:opacity-40 cursor-pointer shadow-2xs transition-all"
-              >
-                <Undo className="w-3.5 h-3.5" />
-                <span>Reset Map</span>
-              </button>
+            {/* Actions Toolbar */}
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-[#E2E9E4]">
+              <div className="flex items-center gap-1.5">
+                <button
+                  type="button"
+                  onClick={handleUndoVertex}
+                  disabled={polygonCoords.length === 0}
+                  className="px-2.5 py-1.5 rounded-lg border border-[#E2E9E4] bg-white text-slate-700 hover:bg-slate-50 flex items-center gap-1 text-[11px] disabled:opacity-40 cursor-pointer shadow-2xs"
+                  title="Undo last placed vertex"
+                >
+                  <Undo className="w-3 h-3" />
+                  <span>Undo</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleResetDrawing}
+                  disabled={polygonCoords.length === 0}
+                  className="px-2.5 py-1.5 rounded-lg border border-red-200 bg-white text-red-600 hover:bg-red-50 flex items-center gap-1 text-[11px] disabled:opacity-40 cursor-pointer shadow-2xs"
+                  title="Clear all vertices"
+                >
+                  <Trash2 className="w-3 h-3" />
+                  <span>Clear</span>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={handleLocateGPS}
+                  className="px-2.5 py-1.5 rounded-lg border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100 flex items-center gap-1 text-[11px] cursor-pointer shadow-2xs"
+                  title="Pan map to current GPS location"
+                >
+                  <Crosshair className="w-3 h-3 text-blue-600" />
+                  <span>My GPS</span>
+                </button>
+              </div>
 
               <button
                 type="submit"
                 disabled={submitting || polygonCoords.length < 3 || calculatedAreaAcres <= 0}
                 title={polygonCoords.length < 3 ? 'Place at least 3 points or resolve parcel via cadastral lookup' : ''}
-                className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-[#008C45] to-[#006B36] hover:from-[#007a3c] hover:to-[#005c2e] text-white font-semibold flex items-center gap-1.5 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
+                className="px-4 py-2 rounded-xl bg-gradient-to-r from-[#008C45] to-[#006B36] hover:from-[#007a3c] hover:to-[#005c2e] text-white font-semibold flex items-center gap-1.5 shadow-xs disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-all"
               >
                 {submitting ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : <Check className="w-3.5 h-3.5" />}
                 <span>Save to PostGIS</span>

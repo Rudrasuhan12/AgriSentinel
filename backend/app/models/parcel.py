@@ -41,6 +41,10 @@ class FarmerParcel(Base):
     village: Mapped[str] = mapped_column(String(100), nullable=False)
     primary_crop: Mapped[str] = mapped_column(String(150), default="Paddy (Swarna MTU)")
     area_acres: Mapped[float] = mapped_column(Float, default=0.0)
+    recorded_area_acres: Mapped[float | None] = mapped_column(Float, nullable=True) # Official Bhulekh Cadastral area
+    calculated_area_acres: Mapped[float | None] = mapped_column(Float, nullable=True) # Area computed from PostGIS geometry
+    farmer_entered_area: Mapped[float | None] = mapped_column(Float, nullable=True) # Area typed by farmer in form
+    cadastral_reference: Mapped[str | None] = mapped_column(String(100), nullable=True)
 
     # PostGIS Spatial Polygon (WGS 84, SRID 4326)
     geom = mapped_column(Geometry(geometry_type="POLYGON", srid=4326, spatial_index=True), nullable=True)

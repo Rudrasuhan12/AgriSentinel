@@ -52,3 +52,4 @@ class CadastralParcel(Base):
         Index("idx_cadastral_hierarchy_plot", "district_name", "tahasil_name", "village_name", "plot_number"),
         Index("idx_cadastral_hierarchy_khata_plot", "district_name", "tahasil_name", "village_name", "khata_number", "plot_number"),
     )
+

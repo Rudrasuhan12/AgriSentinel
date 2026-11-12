@@ -39,7 +39,12 @@ class ParcelResponse(BaseModel):
     village: str
     primary_crop: str
     area_acres: float
+    recorded_area_acres: Optional[float] = None
+    calculated_area_acres: Optional[float] = None
+    farmer_entered_area: Optional[float] = None
+    cadastral_reference: Optional[str] = None
     geojson_geometry: Optional[Dict[str, Any]] = None
+    bbox: Optional[List[float]] = None
     cadastral_source: str
     verification_status: str
     created_at: str

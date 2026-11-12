@@ -183,6 +183,18 @@ async def get_farmer_dashboard_summary(
     )
 
 
+def extract_bbox(geojson_geom):
+    if not geojson_geom or "coordinates" not in geojson_geom:
+        return None
+    coords = geojson_geom.get("coordinates", [])
+    if not coords or len(coords) == 0:
+        return None
+    ring = coords[0]
+    lons = [c[0] for c in ring]
+    lats = [c[1] for c in ring]
+    return [round(min(lons), 6), round(min(lats), 6), round(max(lons), 6), round(max(lats), 6)]
+
+
 @router.get("/parcels", response_model=List[ParcelResponse])
 async def list_farmer_parcels(
     current_farmer: User = Depends(require_role(UserRole.FARMER)),
@@ -206,6 +218,8 @@ async def list_farmer_parcels(
             if sorted_obs:
                 latest_obs = sorted_obs[0]
 
+        bbox = extract_bbox(p.geojson_geometry)
+
         items.append(
             ParcelResponse(
                 id=str(p.id),
@@ -218,7 +232,12 @@ async def list_farmer_parcels(
                 village=p.village,
                 primary_crop=p.primary_crop,
                 area_acres=round(p.area_acres, 2),
+                recorded_area_acres=round(p.recorded_area_acres, 2) if p.recorded_area_acres is not None else None,
+                calculated_area_acres=round(p.calculated_area_acres, 2) if p.calculated_area_acres is not None else None,
+                farmer_entered_area=round(p.farmer_entered_area, 2) if p.farmer_entered_area is not None else None,
+                cadastral_reference=p.cadastral_reference,
                 geojson_geometry=p.geojson_geometry,
+                bbox=bbox,
                 cadastral_source=p.cadastral_source,
                 verification_status=p.verification_status.value,
                 created_at=p.created_at.isoformat(),
@@ -227,6 +246,102 @@ async def list_farmer_parcels(
             )
         )
     return items
+
+
+@router.get("/parcels/{parcel_id}", response_model=ParcelResponse)
+async def get_farmer_parcel(
+    parcel_id: uuid.UUID,
+    current_farmer: User = Depends(require_role(UserRole.FARMER)),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Retrieve single registered cadastral parcel with full geometry, bbox, and verified area details.
+    """
+    stmt = (
+        select(FarmerParcel)
+        .where(FarmerParcel.id == parcel_id, FarmerParcel.farmer_id == current_farmer.id)
+        .options(selectinload(FarmerParcel.observations))
+    )
+    res = await db.execute(stmt)
+    p = res.scalar_one_or_none()
+    if not p:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Parcel {parcel_id} not found or does not belong to your account."
+        )
+
+    latest_obs = None
+    if p.observations:
+        sorted_obs = sorted(p.observations, key=lambda x: x.acquisition_date, reverse=True)
+        if sorted_obs:
+            latest_obs = sorted_obs[0]
+
+    bbox = extract_bbox(p.geojson_geometry)
+
+    return ParcelResponse(
+        id=str(p.id),
+        parcel_code=p.parcel_code,
+        khata_number=p.khata_number,
+        plot_number=p.plot_number,
+        state=p.state,
+        district=p.district,
+        sub_district=p.sub_district,
+        village=p.village,
+        primary_crop=p.primary_crop,
+        area_acres=round(p.area_acres, 2),
+        recorded_area_acres=round(p.recorded_area_acres, 2) if p.recorded_area_acres is not None else None,
+        calculated_area_acres=round(p.calculated_area_acres, 2) if p.calculated_area_acres is not None else None,
+        farmer_entered_area=round(p.farmer_entered_area, 2) if p.farmer_entered_area is not None else None,
+        cadastral_reference=p.cadastral_reference,
+        geojson_geometry=p.geojson_geometry,
+        bbox=bbox,
+        cadastral_source=p.cadastral_source,
+        verification_status=p.verification_status.value,
+        created_at=p.created_at.isoformat(),
+        latest_ndvi=latest_obs.mean_ndvi if latest_obs else None,
+        latest_observation_date=latest_obs.acquisition_date.isoformat() if latest_obs else None,
+    )
+
+
+@router.get("/parcels/{parcel_id}/geometry")
+async def get_farmer_parcel_geometry(
+    parcel_id: uuid.UUID,
+    current_farmer: User = Depends(require_role(UserRole.FARMER)),
+    db: AsyncSession = Depends(get_db),
+):
+    """
+    Export raw GeoJSON Feature for GIS interoperability and CAD integration.
+    """
+    stmt = select(FarmerParcel).where(FarmerParcel.id == parcel_id, FarmerParcel.farmer_id == current_farmer.id)
+    res = await db.execute(stmt)
+    p = res.scalar_one_or_none()
+    if not p or not p.geojson_geometry:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Geometry not found for this parcel."
+        )
+
+    bbox = extract_bbox(p.geojson_geometry)
+
+    return {
+        "type": "Feature",
+        "id": str(p.id),
+        "bbox": bbox,
+        "properties": {
+            "parcel_code": p.parcel_code,
+            "khata_number": p.khata_number,
+            "plot_number": p.plot_number,
+            "village": p.village,
+            "tahasil": p.sub_district,
+            "district": p.district,
+            "recorded_area_acres": p.recorded_area_acres,
+            "calculated_area_acres": p.calculated_area_acres,
+            "verification_status": p.verification_status.value,
+            "cadastral_source": p.cadastral_source,
+            "primary_crop": p.primary_crop,
+        },
+        "geometry": p.geojson_geometry,
+    }
 
 
 @router.post("/parcels", response_model=ParcelResponse, status_code=status.HTTP_201_CREATED)
@@ -317,6 +432,28 @@ async def register_farmer_parcel(
     idx = (count_res.scalar() or 0) + 1
     code = f"OD-{payload.district[:3].upper()}-{idx:04d}"
 
+    # Compute precise geodesic area from geometry
+    calculated_polygon_acres = None
+    if postgis_geom:
+        try:
+            poly_shape = shape(payload.geojson_geometry)
+            # Shoelace geodesic area calculation approximation
+            coords = payload.geojson_geometry["coordinates"][0]
+            R = 6378137
+            total = 0.0
+            for i in range(len(coords) - 1):
+                p1, p2 = coords[i], coords[i + 1]
+                lat1, lat2 = (p1[1] * 3.141592653589793) / 180, (p2[1] * 3.141592653589793) / 180
+                lon1, lon2 = (p1[0] * 3.141592653589793) / 180, (p2[0] * 3.141592653589793) / 180
+                total += (lon2 - lon1) * (2 + __import__('math').sin(lat1) + __import__('math').sin(lat2))
+            area_m2 = abs((total * R * R) / 2.0)
+            calculated_polygon_acres = round(area_m2 * 0.000247105, 2)
+        except Exception:
+            calculated_polygon_acres = round(payload.area_acres, 2)
+
+    recorded_area = round(float(cadastral_match.recorded_area_acres), 2) if cadastral_match else None
+    final_area = recorded_area if recorded_area else (calculated_polygon_acres or payload.area_acres)
+
     now_utc = datetime.now(timezone.utc)
     new_parcel = FarmerParcel(
         farmer_id=current_farmer.id,
@@ -328,7 +465,11 @@ async def register_farmer_parcel(
         sub_district=payload.sub_district.strip(),
         village=payload.village.strip(),
         primary_crop=payload.primary_crop,
-        area_acres=calculated_area,
+        area_acres=final_area,
+        recorded_area_acres=recorded_area,
+        calculated_area_acres=calculated_polygon_acres,
+        farmer_entered_area=round(payload.area_acres, 2),
+        cadastral_reference=f"CAD-{cadastral_match.id}" if cadastral_match else "FARMER-DIGITIZED",
         geom=postgis_geom,
         geojson_geometry=payload.geojson_geometry,
         cadastral_source=cadastral_source,
@@ -353,6 +494,8 @@ async def register_farmer_parcel(
     db.add(notif)
     await db.commit()
 
+    bbox = extract_bbox(new_parcel.geojson_geometry)
+
     return ParcelResponse(
         id=str(new_parcel.id),
         parcel_code=new_parcel.parcel_code,
@@ -364,7 +507,12 @@ async def register_farmer_parcel(
         village=new_parcel.village,
         primary_crop=new_parcel.primary_crop,
         area_acres=round(new_parcel.area_acres, 2),
+        recorded_area_acres=new_parcel.recorded_area_acres,
+        calculated_area_acres=new_parcel.calculated_area_acres,
+        farmer_entered_area=new_parcel.farmer_entered_area,
+        cadastral_reference=new_parcel.cadastral_reference,
         geojson_geometry=new_parcel.geojson_geometry,
+        bbox=bbox,
         cadastral_source=new_parcel.cadastral_source,
         verification_status=new_parcel.verification_status.value,
         created_at=now_utc.isoformat(),

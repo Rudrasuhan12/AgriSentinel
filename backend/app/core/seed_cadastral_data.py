@@ -244,3 +244,4 @@ async def init_and_seed_cadastral():
 
 if __name__ == "__main__":
     asyncio.run(init_and_seed_cadastral())
+

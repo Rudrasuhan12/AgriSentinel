@@ -8,6 +8,7 @@ from app.routers.auth import router as auth_router
 from app.routers.admin import router as admin_router
 from app.routers.farmer import router as farmer_router
 from app.routers.cadastral import router as cadastral_router
+from app.routers.administrative import router as administrative_router
 
 
 @asynccontextmanager
@@ -47,6 +48,7 @@ app.include_router(auth_router)
 app.include_router(admin_router)
 app.include_router(farmer_router)
 app.include_router(cadastral_router)
+app.include_router(administrative_router)
 
 
 @app.get("", tags=["Root"], include_in_schema=False)

@@ -34,6 +34,7 @@ import {
 import { Link } from 'react-router-dom';
 import { InteractiveGISParcelMap } from '../../components/gis/InteractiveGISParcelMap';
 import { FieldRegistrationMapModal } from '../../components/gis/FieldRegistrationMapModal';
+import { FarmerParcelGISViewer } from '../../components/gis/FarmerParcelGISViewer';
 
 type SidebarTab = 
   | 'dashboard' 
@@ -95,6 +96,29 @@ export const FarmerDashboard: React.FC = () => {
   const [showMapModal, setShowMapModal] = useState(false);
   const [showAddParcelModal, setShowAddParcelModal] = useState(false);
   const [showProtocolModal, setShowProtocolModal] = useState(false);
+  const [selectedGISParcelId, setSelectedGISParcelId] = useState<string | null>(null);
+
+  // Sync with URL query parameter for page refreshes
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const pId = params.get('parcelId');
+    if (pId) {
+      setSelectedGISParcelId(pId);
+      setActiveTab('parcels');
+    }
+  }, []);
+
+  const openGISViewer = (parcelId: string) => {
+    setSelectedGISParcelId(parcelId);
+    setActiveTab('parcels');
+    const newUrl = `${window.location.pathname}?parcelId=${parcelId}`;
+    window.history.pushState({ parcelId }, '', newUrl);
+  };
+
+  const closeGISViewer = () => {
+    setSelectedGISParcelId(null);
+    window.history.replaceState({}, '', window.location.pathname);
+  };
 
   // Live Backend Data States
   const [summary, setSummary] = useState<DashboardSummary | null>(null);
@@ -661,11 +685,13 @@ export const FarmerDashboard: React.FC = () => {
                         return (
                           <div 
                             key={p.id}
-                            className="rounded-xl border border-[#E2E9E4] p-4 bg-white hover:border-[#008C45]/50 transition-all shadow-2xs flex flex-col justify-between"
+                            onClick={() => openGISViewer(p.id)}
+                            className="rounded-xl border border-[#E2E9E4] p-4 bg-white hover:border-[#008C45] hover:shadow-xs transition-all shadow-2xs flex flex-col justify-between cursor-pointer group"
+                            title="Click to open exact GIS location and boundary on satellite map"
                           >
                             <div>
                               <div className="flex items-center justify-between mb-2">
-                                <span className="font-mono font-bold text-xs text-[#172B22] flex items-center gap-1">
+                                <span className="font-mono font-bold text-xs text-[#172B22] flex items-center gap-1 group-hover:text-[#008C45] transition-colors">
                                   <MapPin className="w-3.5 h-3.5 text-[#008C45]" />
                                   PARCEL #{p.parcel_code}
                                 </span>
@@ -683,8 +709,8 @@ export const FarmerDashboard: React.FC = () => {
                             </div>
                             <div className="pt-3 border-t border-[#E2E9E4] flex items-center justify-between text-xs font-mono">
                               <span className="font-semibold text-[#172B22]">Area: {p.area_acres} Acres</span>
-                              <span className="px-2 py-0.5 rounded bg-emerald-50 text-[#008C45] border border-emerald-200 text-[10px] font-semibold">
-                                {p.latest_ndvi ? `NDVI: ${p.latest_ndvi} (Healthy)` : 'NDVI: Sentinel-2 Ready'}
+                              <span className="text-[#008C45] group-hover:underline text-[11px] font-semibold flex items-center gap-1">
+                                View on GIS Map &rarr;
                               </span>
                             </div>
                           </div>
@@ -800,47 +826,98 @@ export const FarmerDashboard: React.FC = () => {
 
           {/* TAB 2: MY PARCELS */}
           {activeTab === 'parcels' && (
-            <div className="bg-white border border-[#E2E9E4] rounded-2xl p-6 shadow-xs space-y-6">
-              <div className="flex items-center justify-between pb-4 border-b border-[#E2E9E4]">
-                <div>
-                  <h2 className="font-display font-bold text-xl text-[#172B22]">My Registered Cadastral Parcels</h2>
-                  <p className="text-xs text-[#64746A] mt-0.5">Odisha Bhulekh geo-referenced cadastral map layers and boundary records.</p>
+            selectedGISParcelId ? (
+              <FarmerParcelGISViewer
+                parcelId={selectedGISParcelId}
+                onBack={closeGISViewer}
+                allParcels={summary?.parcels as any}
+              />
+            ) : (
+              <div className="bg-white border border-[#E2E9E4] rounded-2xl p-6 shadow-xs space-y-6">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-[#E2E9E4]">
+                  <div>
+                    <h2 className="font-display font-bold text-xl text-[#172B22]">My Registered Cadastral Parcels</h2>
+                    <p className="text-xs text-[#64746A] mt-0.5">Odisha Bhulekh geo-referenced cadastral map layers and boundary records.</p>
+                  </div>
+                  <button
+                    onClick={() => setShowAddParcelModal(true)}
+                    className="px-3.5 py-2 rounded-xl bg-gradient-to-r from-[#008C45] to-[#006B36] hover:from-[#007a3c] hover:to-[#005c2e] text-white text-xs font-semibold flex items-center gap-1.5 cursor-pointer shadow-xs transition-all"
+                  >
+                    <Plus className="w-4 h-4" />
+                    <span>Register New Parcel</span>
+                  </button>
                 </div>
-                <button
-                  onClick={() => setShowAddParcelModal(true)}
-                  className="px-3.5 py-2 rounded-xl bg-[#008C45] text-white text-xs font-semibold flex items-center gap-1.5"
-                >
-                  <Plus className="w-4 h-4" />
-                  <span>Register New Parcel</span>
-                </button>
-              </div>
 
-              {!summary || summary.parcels.length === 0 ? (
-                <div className="py-12 text-center text-xs text-slate-500 bg-[#F7F9F8] rounded-xl border border-dashed border-[#E2E9E4]">
-                  No registered parcels found. Click "Register New Parcel" to add your field boundaries.
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {summary.parcels.map((p) => (
-                    <div key={p.id} className="p-4 rounded-xl border border-[#E2E9E4] bg-[#F7F9F8] space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="font-mono font-bold text-sm text-[#172B22]">Plot No. {p.plot_number} (Parcel #{p.parcel_code})</span>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-100 text-[#008C45] font-bold">
-                          {p.verification_status}
-                        </span>
-                      </div>
-                      <div className="text-xs text-slate-600 space-y-1 font-mono">
-                        <div>Khata Number: <strong>{p.khata_number}</strong></div>
-                        <div>District: <strong>{p.district}</strong> • Tahasil: <strong>{p.sub_district}</strong></div>
-                        <div>Recorded Area: <strong>{p.area_acres} Acres</strong></div>
-                        <div>Crop: <strong>{p.primary_crop}</strong></div>
-                        <div>Cadastral Source: <strong>{p.cadastral_source}</strong></div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                {!summary || summary.parcels.length === 0 ? (
+                  <div className="py-12 text-center text-xs text-slate-500 bg-[#F7F9F8] rounded-xl border border-dashed border-[#E2E9E4]">
+                    No registered parcels found. Click "Register New Parcel" to add your field boundaries.
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {summary.parcels.map((p) => {
+                      const isVerified = p.verification_status === 'VERIFIED';
+                      return (
+                        <div 
+                          key={p.id} 
+                          onClick={() => openGISViewer(p.id)}
+                          className="p-5 rounded-2xl border border-[#E2E9E4] bg-white hover:border-[#008C45] hover:shadow-md transition-all shadow-2xs space-y-3 cursor-pointer group flex flex-col justify-between"
+                          title="Click to view exact parcel boundaries and satellite GIS location"
+                        >
+                          <div>
+                            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                              <span className="font-mono font-bold text-sm text-[#172B22] group-hover:text-[#008C45] transition-colors flex items-center gap-1.5">
+                                <MapPin className="w-4 h-4 text-[#008C45]" />
+                                Plot No. {p.plot_number} ({p.parcel_code})
+                              </span>
+                              <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold ${
+                                isVerified 
+                                  ? 'bg-[#E6F4EA] text-[#008C45] border border-[#008C45]/20' 
+                                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                              }`}>
+                                {isVerified ? '✓ VERIFIED CADASTRAL' : 'PENDING VERIFICATION'}
+                              </span>
+                            </div>
+
+                            <div className="text-xs text-slate-600 space-y-1.5 font-mono pt-1">
+                              <div className="flex justify-between">
+                                <span className="text-slate-400">Khata Number:</span>
+                                <strong className="text-[#172B22]">{p.khata_number}</strong>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-400">Location:</span>
+                                <span className="text-[#172B22] font-medium">{p.village}, {p.sub_district}, {p.district}</span>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-400">Recorded Area:</span>
+                                <strong className="text-[#008C45] font-bold">{p.area_acres} Acres</strong>
+                              </div>
+                              <div className="flex justify-between">
+                                <span className="text-slate-400">Crop:</span>
+                                <span className="text-slate-800">{p.primary_crop}</span>
+                              </div>
+                              <div className="flex justify-between text-[11px] pt-1 border-t border-slate-100">
+                                <span className="text-slate-400">Source:</span>
+                                <span className="text-[#008C45] font-medium truncate max-w-[220px]" title={p.cadastral_source}>
+                                  {p.cadastral_source}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="pt-3 border-t border-[#E2E9E4] flex items-center justify-between">
+                            <span className="text-[11px] text-slate-400 font-mono">SRID: 4326 (WGS84)</span>
+                            <span className="px-3 py-1.5 rounded-lg bg-[#E6F4EA] text-[#008C45] group-hover:bg-[#008C45] group-hover:text-white transition-all text-xs font-semibold flex items-center gap-1 shadow-2xs">
+                              <span>Open Exact GIS Location</span>
+                              <span>&rarr;</span>
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            )
           )}
 
           {/* TAB 3: YIELD ESTIMATES */}

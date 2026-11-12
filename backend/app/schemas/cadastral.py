@@ -64,3 +64,4 @@ class DistrictItem(BaseModel):
 class CadastralHierarchyResponse(BaseModel):
     state: str
     districts: List[DistrictItem]
+
