@@ -35,19 +35,24 @@ async def list_official_requests(
 
     items = []
     for req in requests:
+        # Formulate a clean display name from email or designation if explicit profile name not present
+        email_handle = req.user.email.split("@")[0] if req.user and req.user.email else ""
+        derived_name = email_handle.replace(".", " ").replace("_", " ").title() if email_handle else "Government Official"
+        
         items.append(
             OfficialRequestDetailResponse(
                 id=str(req.id),
                 user_id=str(req.user_id),
-                official_email=req.user.email or "",
-                mobile_number=req.user.mobile_number,
-                department=req.department,
-                organization=req.organization,
-                designation=req.designation,
-                employee_id=req.employee_id,
-                requested_state=req.requested_state,
-                requested_district=req.requested_district,
-                reason=req.reason,
+                official_name=derived_name,
+                official_email=req.user.email or "Not available",
+                mobile_number=req.user.mobile_number or "Not available",
+                department=req.department or "Not available",
+                organization=req.organization or "Not available",
+                designation=req.designation or "Official",
+                employee_id=req.employee_id or None,
+                requested_state=req.requested_state or "Odisha",
+                requested_district=req.requested_district or "Not available",
+                reason=req.reason or "Official access request",
                 invitation_code=req.invitation_code,
                 approval_status=req.approval_status.value,
                 created_at=req.created_at.isoformat(),
