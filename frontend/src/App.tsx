@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { PlatformPreviewSection } from './components/PlatformPreviewSection';
@@ -12,7 +13,16 @@ import { CTASection } from './components/CTASection';
 import { Footer } from './components/Footer';
 import { LaunchPlatformModal } from './components/LaunchPlatformModal';
 
-export const App: React.FC = () => {
+import { LoginPage } from './pages/LoginPage';
+import { SignupPage } from './pages/SignupPage';
+import { FarmerDashboard } from './pages/dashboards/FarmerDashboard';
+import { GovernmentDashboard } from './pages/dashboards/GovernmentDashboard';
+import { AdminDashboard } from './pages/dashboards/AdminDashboard';
+import { ProtectedRoute } from './components/ProtectedRoute';
+import { UserRole } from './types';
+
+// The Main Landing Page Component
+const LandingPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   const handleOpenModal = () => setModalOpen(true);
@@ -20,10 +30,10 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-charcoal-950 text-sand-100 flex flex-col font-sans selection:bg-lime-dim selection:text-lime-accent">
-      {/* Fixed Navigation Bar with Updated Anchor Routing */}
+      {/* Fixed Navigation Bar */}
       <Navbar onOpenPreview={handleOpenModal} />
 
-      {/* Main Content Sections - Reordered to Feature 3D Heap Directly Below Hero */}
+      {/* Main Content Sections - 3D Heap Directly Below Hero */}
       <main className="flex-1">
         {/* 1. Hero Section */}
         <HeroSection onExploreClick={handleOpenModal} />
@@ -59,6 +69,52 @@ export const App: React.FC = () => {
       {/* Interactive Platform Concept Modal */}
       <LaunchPlatformModal isOpen={modalOpen} onClose={handleCloseModal} />
     </div>
+  );
+};
+
+export const App: React.FC = () => {
+  return (
+    <Routes>
+      {/* Public Landing Page */}
+      <Route path="/" element={<LandingPage />} />
+
+      {/* Authentication Pages */}
+      <Route path="/login" element={<LoginPage />} />
+      <Route path="/signup" element={<SignupPage />} />
+
+      {/* Protected Farmer Portal */}
+      <Route
+        path="/farmer/*"
+        element={
+          <ProtectedRoute allowedRoles={[UserRole.FARMER]}>
+            <FarmerDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Government Portal */}
+      <Route
+        path="/government/*"
+        element={
+          <ProtectedRoute allowedRoles={[UserRole.GOVERNMENT_OFFICIAL]}>
+            <GovernmentDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Protected Administrator Console */}
+      <Route
+        path="/admin/*"
+        element={
+          <ProtectedRoute allowedRoles={[UserRole.ADMIN]}>
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      {/* Catch-all Fallback */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
   );
 };
 

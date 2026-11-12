@@ -4,8 +4,14 @@ import {
   Scan, 
   Menu, 
   X, 
-  ArrowUpRight 
+  ArrowUpRight, 
+  User, 
+  LogOut,
+  LayoutDashboard
 } from 'lucide-react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
+import { UserRole } from '../types';
 
 interface NavbarProps {
   onOpenPreview?: () => void;
@@ -15,37 +21,41 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState('hero');
+  const { user, isAuthenticated, logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
 
-  // Streamlined, focused desktop navigation links to eliminate congestion
+  // Curated, spacious desktop navigation items (strictly 4-5 focused links to prevent clutter)
   const desktopLinks = [
     { name: '3D Heap', href: '#heap-reconstruction', id: 'heap-reconstruction' },
-    { name: 'Technology', href: '#technology', id: 'technology' },
+    { name: 'Capabilities', href: '#capabilities', id: 'capabilities' },
+    { name: 'Architecture', href: '#technology', id: 'technology' },
     { name: 'Workflow', href: '#workflow', id: 'workflow' },
     { name: 'Methodology', href: '#methodology', id: 'methodology' },
-    { name: 'Research', href: '#research', id: 'research' },
-    { name: 'About', href: '#about', id: 'about' },
   ];
 
-  // Complete list for mobile drawer
+  // Full comprehensive section list for mobile drawer
   const mobileLinks = [
-    { name: 'Home', href: '#hero', id: 'hero' },
+    { name: 'Home Overview', href: '#hero', id: 'hero' },
     { name: '3D Heap Reconstruction', href: '#heap-reconstruction', id: 'heap-reconstruction' },
-    { name: 'Capabilities', href: '#capabilities', id: 'capabilities' },
-    { name: 'Technology Architecture', href: '#technology', id: 'technology' },
-    { name: 'Workflow Protocol', href: '#workflow', id: 'workflow' },
+    { name: 'Technology Capabilities', href: '#capabilities', id: 'capabilities' },
+    { name: 'System Architecture', href: '#technology', id: 'technology' },
+    { name: 'Execution Workflow', href: '#workflow', id: 'workflow' },
     { name: 'Yield Methodology', href: '#methodology', id: 'methodology' },
-    { name: 'Research Focus', href: '#research', id: 'research' },
+    { name: 'Research & Innovation', href: '#research', id: 'research' },
     { name: 'About AgriSentinel', href: '#about', id: 'about' },
   ];
 
-  // Scroll spy to detect active section
+  // Scroll spy to detect active section when on landing page
   useEffect(() => {
+    if (location.pathname !== '/') return;
+
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
 
-      const allWatchedIds = ['hero', 'heap-reconstruction', 'capabilities', 'about', 'technology', 'workflow', 'methodology', 'research'];
+      const allWatchedIds = ['hero', 'heap-reconstruction', 'capabilities', 'technology', 'workflow', 'methodology', 'research', 'about'];
       const sections = allWatchedIds.map(id => document.getElementById(id));
-      const scrollPos = window.scrollY + 220;
+      const scrollPos = window.scrollY + 200;
 
       for (let i = sections.length - 1; i >= 0; i--) {
         const sec = sections[i];
@@ -58,21 +68,35 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
 
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [location.pathname]);
+
+  const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    if (location.pathname !== '/') {
+      e.preventDefault();
+      navigate('/' + href);
+    }
+  };
+
+  const getDashboardPath = () => {
+    if (!user) return '/login';
+    if (user.role === UserRole.ADMIN) return '/admin/dashboard';
+    if (user.role === UserRole.GOVERNMENT_OFFICIAL) return '/government/dashboard';
+    return '/farmer/dashboard';
+  };
 
   return (
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        scrolled
+        scrolled || location.pathname !== '/'
           ? 'bg-charcoal-950/90 backdrop-blur-md border-b border-forest-800/60 py-3 shadow-xl'
-          : 'bg-transparent py-4 sm:py-5 border-b border-transparent'
+          : 'bg-charcoal-950/40 backdrop-blur-sm py-4 border-b border-forest-900/40'
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4">
+        <div className="flex items-center justify-between">
           
-          {/* Brand Logo & Wordmark */}
-          <a href="#hero" className="flex items-center gap-3 group focus:outline-none shrink-0">
+          {/* Brand Logo */}
+          <Link to="/" className="flex items-center gap-3 group shrink-0 focus:outline-none">
             <div className="relative w-9 h-9 rounded-lg bg-gradient-to-br from-forest-800 to-forest-900 border border-lime-dim flex items-center justify-center overflow-hidden shadow-subtle-glow group-hover:border-lime-accent/50 transition-colors">
               <Scan className="w-4 h-4 text-lime-accent transition-transform duration-300 group-hover:scale-110" />
               <div className="absolute inset-0 bg-lime-accent/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -90,18 +114,19 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
                 UAV & Geospatial Analytics
               </span>
             </div>
-          </a>
+          </Link>
 
           {/* Spacious Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 mx-auto">
+          <nav className="hidden lg:flex items-center gap-7 xl:gap-9">
             {desktopLinks.map((link) => {
-              const isActive = activeSection === link.id;
+              const isActive = location.pathname === '/' && activeSection === link.id;
               return (
                 <a
                   key={link.name}
                   href={link.href}
-                  className={`text-[11px] xl:text-xs uppercase font-mono tracking-widest transition-colors relative py-1.5 focus:outline-none ${
-                    isActive ? 'text-lime-accent font-semibold' : 'text-sand-300/80 hover:text-sand-50'
+                  onClick={(e) => handleNavClick(e, link.href)}
+                  className={`text-xs uppercase font-mono tracking-wider transition-colors relative py-1.5 focus:outline-none ${
+                    isActive ? 'text-lime-accent font-semibold' : 'text-sand-300 hover:text-sand-50'
                   }`}
                 >
                   {link.name}
@@ -117,18 +142,49 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
             })}
           </nav>
 
-          {/* Action CTA: Single, Elegant, Uncluttered Launch Button */}
-          <div className="hidden md:flex items-center shrink-0">
-            <button
-              onClick={onOpenPreview}
-              className="relative group overflow-hidden px-4 sm:px-4.5 py-2 rounded-lg bg-gradient-to-r from-forest-700 to-forest-600 hover:from-forest-600 hover:to-forest-500 text-sand-50 text-[11px] font-mono uppercase tracking-wider font-semibold border border-lime-dim flex items-center gap-2 shadow-sm hover:shadow-subtle-glow transition-all active:scale-95"
-            >
-              <span className="relative z-10 flex items-center gap-1.5">
-                Launch Platform
-                <ArrowUpRight className="w-3.5 h-3.5 text-lime-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-              </span>
-              <div className="absolute inset-0 bg-lime-accent/10 opacity-0 group-hover:opacity-100 transition-opacity" />
-            </button>
+          {/* Action CTAs: Clean, uncluttered layout with auth actions */}
+          <div className="hidden md:flex items-center gap-3 shrink-0">
+            {isAuthenticated && user ? (
+              <div className="flex items-center gap-2">
+                <Link
+                  to={getDashboardPath()}
+                  className="px-3.5 py-1.5 rounded-lg bg-forest-900 border border-lime-dim/60 hover:border-lime-accent text-sand-100 text-xs font-mono flex items-center gap-2 transition-colors"
+                >
+                  <LayoutDashboard className="w-3.5 h-3.5 text-lime-accent" />
+                  <span>Dashboard</span>
+                  <span className="text-[9px] px-1 rounded bg-forest-800 text-lime-300 uppercase">
+                    {user.role === UserRole.FARMER ? 'Farmer' : user.role === UserRole.ADMIN ? 'Admin' : 'Official'}
+                  </span>
+                </Link>
+                <button
+                  onClick={logout}
+                  title="Sign Out"
+                  className="p-1.5 rounded-lg border border-forest-800 bg-forest-950/60 text-sand-400 hover:text-rose-400 hover:border-rose-900/50 transition-colors"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2.5">
+                <Link
+                  to="/login"
+                  className="px-3 py-1.5 rounded-lg text-sand-200 hover:text-sand-50 hover:bg-forest-900/50 text-xs font-mono uppercase tracking-wider transition-colors"
+                >
+                  Sign In
+                </Link>
+
+                <Link
+                  to="/signup"
+                  className="relative group overflow-hidden px-3.5 py-1.5 rounded-lg bg-gradient-to-r from-emerald-600 to-forest-700 hover:from-emerald-500 hover:to-forest-600 text-sand-50 text-xs font-mono uppercase tracking-wider font-semibold border border-lime-dim flex items-center gap-1.5 shadow-sm hover:shadow-subtle-glow transition-all active:scale-95"
+                >
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    Launch Platform
+                    <ArrowUpRight className="w-3.5 h-3.5 text-lime-accent group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+                  </span>
+                  <div className="absolute inset-0 bg-lime-accent/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile Menu Toggle Button */}
@@ -149,35 +205,64 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-            className="lg:hidden bg-charcoal-950/95 backdrop-blur-xl border-b border-forest-800/80 px-4 pt-3 pb-6 shadow-2xl"
+            transition={{ duration: 0.2 }}
+            className="lg:hidden bg-charcoal-950/98 border-b border-forest-800/80 backdrop-blur-xl px-4 py-4 mt-2 overflow-hidden"
           >
-            <div className="flex flex-col gap-1.5 py-2">
+            <div className="flex flex-col gap-2">
               {mobileLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
-                  onClick={() => setMobileMenuOpen(false)}
-                  className={`px-3 py-2 rounded-md text-xs font-mono tracking-wider transition-colors ${
-                    activeSection === link.id
-                      ? 'text-lime-accent bg-forest-900/60 font-semibold'
-                      : 'text-sand-200 hover:text-lime-accent hover:bg-forest-900/30'
-                  }`}
+                  onClick={(e) => {
+                    handleNavClick(e, link.href);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="text-xs uppercase font-mono tracking-wider py-2 px-3 rounded-lg text-sand-300 hover:text-lime-accent hover:bg-forest-900/40 transition-colors"
                 >
                   {link.name}
                 </a>
               ))}
-              <div className="pt-3 mt-1 border-t border-forest-800 flex flex-col gap-2">
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false);
-                    if (onOpenPreview) onOpenPreview();
-                  }}
-                  className="w-full py-2.5 rounded-lg bg-forest-700 hover:bg-forest-600 text-sand-50 font-mono text-xs uppercase tracking-wider font-semibold border border-lime-dim flex items-center justify-center gap-2 transition-colors"
-                >
-                  Launch Platform Preview
-                  <ArrowUpRight className="w-4 h-4 text-lime-accent" />
-                </button>
+
+              <div className="pt-3 border-t border-forest-800/60 flex flex-col gap-2">
+                {isAuthenticated && user ? (
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      to={getDashboardPath()}
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full py-2.5 rounded-lg bg-forest-900 border border-lime-dim/60 text-sand-50 text-xs font-mono uppercase tracking-wider text-center flex items-center justify-center gap-2"
+                    >
+                      <LayoutDashboard className="w-4 h-4 text-lime-accent" />
+                      Go to {user.role === UserRole.FARMER ? 'Farmer' : user.role === UserRole.ADMIN ? 'Admin' : 'Official'} Portal
+                    </Link>
+                    <button
+                      onClick={() => {
+                        logout();
+                        setMobileMenuOpen(false);
+                      }}
+                      className="w-full py-2 text-rose-400 text-xs font-mono text-center flex items-center justify-center gap-1.5"
+                    >
+                      <LogOut className="w-3.5 h-3.5" />
+                      Sign Out
+                    </button>
+                  </div>
+                ) : (
+                  <div className="flex flex-col gap-2">
+                    <Link
+                      to="/login"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full py-2.5 rounded-lg border border-forest-800 text-sand-100 text-xs font-mono uppercase tracking-wider text-center"
+                    >
+                      Sign In
+                    </Link>
+                    <Link
+                      to="/signup"
+                      onClick={() => setMobileMenuOpen(false)}
+                      className="w-full py-2.5 rounded-lg bg-gradient-to-r from-emerald-600 to-forest-700 text-sand-50 text-xs font-mono uppercase tracking-wider text-center font-semibold"
+                    >
+                      Register / Access Request
+                    </Link>
+                  </div>
+                )}
               </div>
             </div>
           </motion.div>

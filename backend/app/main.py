@@ -1,0 +1,55 @@
+from contextlib import asynccontextmanager
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.config import settings
+from app.core.bootstrap import init_db_tables, bootstrap_initial_admin
+from app.routers.auth import router as auth_router
+from app.routers.admin import router as admin_router
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup: ensure tables exist and admin is initialized
+    print(f"[{settings.PROJECT_NAME}] Starting up with PostgreSQL on {settings.DATABASE_URL.split('@')[-1]}")
+    try:
+        await init_db_tables()
+        await bootstrap_initial_admin()
+        print(f"[{settings.PROJECT_NAME}] Database tables and admin bootstrap verified.")
+    except Exception as e:
+        print(f"[{settings.PROJECT_NAME}] Error during database startup initialization: {e}")
+    
+    yield
+    print(f"[{settings.PROJECT_NAME}] Shutting down.")
+
+
+app = FastAPI(
+    title=settings.PROJECT_NAME,
+    version=settings.VERSION,
+    description="AgriSentinel UAV Agricultural Field Assessment & Yield Analytics API",
+    lifespan=lifespan,
+)
+
+# Secure CORS Middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.CORS_ORIGINS,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Include Routers
+app.include_router(auth_router)
+app.include_router(admin_router)
+
+
+@app.get("/health", tags=["System Health"])
+@app.get("/api/health", tags=["System Health"])
+async def health_check():
+    return {
+        "status": "healthy",
+        "service": settings.PROJECT_NAME,
+        "version": settings.VERSION,
+        "environment": settings.ENVIRONMENT,
+    }

@@ -1,0 +1,23 @@
+services:
+  db:
+    image: postgis/postgis:16-3.5
+    container_name: agrisentinel_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-agrisentinel_db}
+      POSTGRES_USER: ${POSTGRES_USER:-agrisentinel_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-agrisentinel_dev_secret_change_me}
+    ports:
+      - "${POSTGRES_PORT:-5436}:5432"
+    volumes:
+      - agrisentinel_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-agrisentinel_user} -d ${POSTGRES_DB:-agrisentinel_db}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+volumes:
+  agrisentinel_pgdata:
+    name: agrisentinel_pgdata

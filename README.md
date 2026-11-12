@@ -124,38 +124,111 @@ AgriSentinel/
 
 ---
 
+### Implemented Authentication & Database Architecture
+
+AgriSentinel provides a robust, production-grade authentication and authorization foundation built for agricultural and governmental multi-tenancy:
+
+1. **Dockerized PostgreSQL 16 + PostGIS 3.5:**
+   - Dedicated PostGIS database container initialized via `docker-compose.yml`.
+   - Host port default: `5436` (internal container port `5432`) to prevent conflicts with standard local databases.
+   - Persistent volume: `agrisentinel_pgdata`.
+
+2. **Security & Session Architecture:**
+   - **Password Security:** Salted `bcrypt` hashing (12 rounds) with OWASP-aligned complexity rules.
+   - **Access Tokens:** Signed asymmetric-compatible JWTs (HS256 default, 60-minute expiry) containing user role and verified status.
+   - **Refresh Tokens:** Cryptographically random (64-byte URL-safe) tokens stored as SHA-256 hashes in `user_sessions` with single-use rotation and revocation.
+   - **Rate Limiting & Consent Logging:** Consent timestamps (`terms`, `privacy`, `field_data_processing`) recorded with client IP and user agent.
+
+3. **Multi-Role Access Control (RBAC):**
+   - **`FARMER`:** Instant access upon phone verification; land parcel cadastral records, NDVI vegetation status, and 3D heap reconstruction records.
+   - **`GOVERNMENT_OFFICIAL`:** Requires submission of department, designation, employee ID, and jurisdiction district; account status remains `PENDING` until approved by an administrator.
+   - **`ADMIN`:** System governance console with live pending request review (`Approve` / `Reject`), user audit trails, and PostGIS infrastructure monitoring. Development admin automatically bootstrapped via environment settings.
+
+4. **Colorful, Modern Authentication UI:**
+   - Responsive split-screen design featuring a 50–55% desktop visual showcase with dynamic layered farm landscapes, animated UAV telemetry, coordinate scanners, and floating crop analytics.
+   - Vibrant palette combining emerald green, lime, teal, turquoise, warm yellow, soft cream, and light sky blue.
+   - 4-step progressive farmer registration with dependent Odisha administrative divisions (District -> Block -> Village) and mobile number authentication.
+
+---
+
 ### Installation & Setup
 
-> **Implementation Notice:** Core backend services and frontend packages are scheduled for development in Phase 1. The commands below reflect the planned onboarding workflow once packages are committed.
+#### 1. Configure Environment Variables
 
-#### Planned Setup Procedure (Pending Implementation)
+Copy the template to your local `.env`:
 
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/AgriSentinel.git
-   cd AgriSentinel
-   ```
+```bash
+cp .env.example .env
+```
 
-2. **Configure Environment Variables:**
-   ```bash
-   cp .env.example .env
-   # Edit .env with your specific local database and map tile configurations
-   ```
+Default local database port is set to `5436` in `.env.example`:
+```env
+POSTGRES_HOST=127.0.0.1
+POSTGRES_PORT=5436
+POSTGRES_DB=agrisentinel_db
+POSTGRES_USER=agrisentinel_admin
+POSTGRES_PASSWORD=AgrisentinelSecure2026!
+```
 
-3. **Backend Service Setup (Upcoming):**
-   ```bash
-   cd backend
-   python -m venv .venv
-   source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-   pip install -r requirements.txt
-   ```
+#### 2. Start PostgreSQL + PostGIS via Docker
 
-4. **Frontend Service Setup (Upcoming):**
-   ```bash
-   cd frontend
-   npm install
-   npm run dev
-   ```
+```bash
+docker compose up -d
+```
+
+Verify the container is healthy:
+```bash
+docker ps --filter "name=agrisentinel_db"
+```
+
+#### 3. Backend Service Setup (FastAPI)
+
+```bash
+cd backend
+python -m venv .venv
+# On Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+# On Linux/macOS:
+source .venv/bin/activate
+
+pip install -r requirements.txt
+uvicorn app.main:app --host 127.0.0.1 --port 8000 --reload
+```
+
+*The database tables and development administrator account (`admin@agrisentinel.local`) are automatically initialized on application startup.*
+
+#### 4. Frontend Application (React + Vite + TypeScript)
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Navigate to `http://localhost:5173/` in your browser.
+
+#### 5. Running the Test Suite
+
+```bash
+pytest -v
+```
+
+---
+
+### API Endpoints Summary
+
+| Method | Endpoint | Description | Role / Auth |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/health` | Service health & database connectivity check | Public |
+| `POST` | `/api/auth/register/farmer` | Register farmer with Odisha profile & consent log | Public |
+| `POST` | `/api/auth/register/official-request` | Submit government official access request | Public |
+| `POST` | `/api/auth/login` | Authenticate with email/mobile and password | Public |
+| `POST` | `/api/auth/refresh` | Rotate single-use refresh token for new access token | Public |
+| `POST` | `/api/auth/logout` | Revoke active session refresh token | Authenticated |
+| `GET` | `/api/auth/me` | Fetch authenticated user profile and permissions | Authenticated |
+| `GET` | `/api/admin/official-requests` | List official access requests | Admin only |
+| `POST` | `/api/admin/official-requests/{id}/approve` | Approve government official account | Admin only |
+| `POST` | `/api/admin/official-requests/{id}/reject` | Reject government official account | Admin only |
 
 ---
 
