@@ -20,10 +20,10 @@ export const AuthUavShowcase: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex flex-col justify-center max-w-xl w-full">
+    <div className="flex flex-col justify-center max-w-lg lg:max-w-xl w-full">
       
       {/* Aerial UAV Imagery Card with Live Animated Geospatial HUD */}
-      <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200/90 shadow-lg aspect-[16/10] max-h-[220px] sm:max-h-[250px] lg:max-h-[270px] bg-slate-900 group">
+      <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200/90 shadow-lg aspect-[16/10] max-h-[190px] sm:max-h-[220px] lg:max-h-[240px] bg-slate-900 group">
         
         {/* Drone Aerial Imagery with Slow Cinematic Zoom */}
         <motion.img 
@@ -52,12 +52,12 @@ export const AuthUavShowcase: React.FC = () => {
         />
 
         {/* Top-Left Telemetry Tag */}
-        <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-black/75 backdrop-blur-md border border-white/15 text-white font-mono text-[9px] sm:text-[10px] tracking-wider uppercase z-20 shadow-sm">
+        <div className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-md bg-black/75 backdrop-blur-md border border-white/15 text-white font-mono text-[9px] sm:text-[10px] tracking-wider uppercase z-20 shadow-sm">
           PIXEL: 06-747 • T-4K IR
         </div>
 
         {/* Top-Right UAV Flight Telemetry Box with Live Pulsing Indicator */}
-        <div className="absolute top-3 right-3 px-2.5 py-1.5 rounded-lg bg-black/80 backdrop-blur-md border border-lime-400/35 text-white font-mono text-[9px] sm:text-[10px] flex items-center gap-2 z-20 shadow-sm">
+        <div className="absolute top-2.5 right-2.5 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-md border border-lime-400/35 text-white font-mono text-[9px] sm:text-[10px] flex items-center gap-2 z-20 shadow-sm">
           <div className="w-5 h-5 rounded bg-[#008C45] flex items-center justify-center text-white relative">
             <Compass className="w-3 h-3 text-lime-200" />
             <span className="absolute -top-0.5 -right-0.5 flex h-2 w-2">
@@ -137,11 +137,10 @@ export const AuthUavShowcase: React.FC = () => {
 
           {/* Central Targeting Reticle with Expanding Pulse & Rotating Radar Beam */}
           <g transform="translate(205, 135)">
-            {/* Concentric Reticle Radar Rings */}
             <motion.circle
               cx="0"
               cy="0"
-              r="30"
+              r="28"
               stroke="#f59e0b"
               strokeWidth="1.5"
               fill="none"
@@ -158,7 +157,7 @@ export const AuthUavShowcase: React.FC = () => {
             <motion.circle
               cx="0"
               cy="0"
-              r="18"
+              r="16"
               stroke="#f59e0b"
               strokeWidth="1"
               strokeDasharray="3,3"
@@ -172,14 +171,13 @@ export const AuthUavShowcase: React.FC = () => {
                 ease: "linear"
               }}
             />
-            {/* Center Anchor Point */}
             <circle cx="0" cy="0" r="3.5" fill="#f59e0b" />
           </g>
 
         </svg>
 
         {/* Bottom-Left Metric Badge */}
-        <div className="absolute bottom-3 left-3 px-2.5 py-1.5 rounded-lg bg-black/80 backdrop-blur-md border border-emerald-500/35 text-emerald-400 font-mono text-[9px] sm:text-[10px] flex items-center gap-2 z-20 shadow-sm">
+        <div className="absolute bottom-2.5 left-2.5 px-2.5 py-1 rounded-lg bg-black/80 backdrop-blur-md border border-emerald-500/35 text-emerald-400 font-mono text-[9px] sm:text-[10px] flex items-center gap-2 z-20 shadow-sm">
           <Layers className="w-3.5 h-3.5 text-emerald-300 shrink-0" />
           <div>
             <div className="text-[8px] sm:text-[9px] text-slate-300 uppercase tracking-wider font-semibold">
@@ -194,33 +192,33 @@ export const AuthUavShowcase: React.FC = () => {
       </div>
 
       {/* Eyebrow Badge */}
-      <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] text-[10px] font-mono font-bold uppercase tracking-wider mt-4 mb-2 w-fit">
+      <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] text-[10px] font-mono font-bold uppercase tracking-wider mt-3 mb-1.5 w-fit">
         <Sprout className="w-3 h-3 text-[#008C45]" />
         <span>UNIFIED AGRICULTURAL INTELLIGENCE</span>
       </div>
 
       {/* Editorial Heading */}
-      <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-display font-extrabold text-[#0f172a] leading-tight tracking-tight">
+      <h1 className="text-2xl sm:text-[26px] lg:text-[28px] font-display font-extrabold text-[#0f172a] leading-tight tracking-tight">
         Intelligence That Grows With <br className="hidden sm:inline" />
         <span className="text-[#008C45]">Every Field.</span>
       </h1>
 
       {/* Platform Description */}
-      <p className="text-xs sm:text-sm text-[#475569] leading-relaxed mt-1.5 max-w-lg">
+      <p className="text-xs sm:text-[13px] text-[#475569] leading-relaxed mt-1 max-w-lg">
         Connect agricultural field intelligence, UAV assessments and yield insights through one unified platform.
       </p>
 
       {/* Horizontal Feature Highlights Strip */}
-      <div className="flex items-center flex-wrap gap-y-2 mt-4 pt-3 border-t border-gray-100 text-xs text-[#334155] font-medium">
-        <div className="flex items-center gap-1.5 pr-4 border-r border-gray-200">
+      <div className="flex items-center flex-wrap gap-y-1.5 mt-3 pt-2.5 border-t border-gray-100 text-xs text-[#334155] font-medium">
+        <div className="flex items-center gap-1.5 pr-3.5 border-r border-gray-200">
           <Compass className="w-3.5 h-3.5 text-[#008C45]" />
           <span>UAV Analytics</span>
         </div>
-        <div className="flex items-center gap-1.5 px-4 border-r border-gray-200">
+        <div className="flex items-center gap-1.5 px-3.5 border-r border-gray-200">
           <Layers className="w-3.5 h-3.5 text-[#008C45]" />
           <span>Geospatial Insights</span>
         </div>
-        <div className="flex items-center gap-1.5 pl-4">
+        <div className="flex items-center gap-1.5 pl-3.5">
           <Sprout className="w-3.5 h-3.5 text-[#008C45]" />
           <span>Yield Intelligence</span>
         </div>

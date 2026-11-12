@@ -147,9 +147,9 @@ export const SignupPage: React.FC = () => {
   };
 
   return (
-    <div className="min-h-[100dvh] w-full flex flex-col bg-white text-[#0f172a] relative select-none overflow-x-hidden">
+    <div className="h-[100dvh] w-full overflow-hidden flex flex-col bg-white text-[#0f172a] relative select-none">
       
-      {/* Soft Ambient Agritech Wave Gradients at Bottom Corners (as on login page) */}
+      {/* Soft Ambient Agritech Wave Gradients at Bottom Corners */}
       <div className="absolute -bottom-10 -left-10 w-[420px] h-[260px] pointer-events-none opacity-80 z-0">
         <svg viewBox="0 0 400 250" fill="none" className="w-full h-full">
           <path 
@@ -197,22 +197,22 @@ export const SignupPage: React.FC = () => {
       </div>
 
       {/* Top Header Bar */}
-      <header className="shrink-0 w-full px-6 sm:px-12 lg:px-16 py-4 flex items-center justify-between border-b border-gray-100 z-10 bg-white/90 backdrop-blur-sm">
+      <header className="shrink-0 w-full px-6 sm:px-12 lg:px-16 py-3 sm:py-3.5 flex items-center justify-between border-b border-gray-100 z-10 bg-white/95 backdrop-blur-sm">
         {/* Brand Logo & Tag */}
         <Link to="/" className="flex items-center gap-3 group focus:outline-none">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-[#008C45] to-[#005f2f] flex items-center justify-center text-white shadow-md shadow-emerald-700/20 group-hover:scale-105 transition-transform">
+          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-[#008C45] to-[#005f2f] flex items-center justify-center text-white shadow-md shadow-emerald-700/20 group-hover:scale-105 transition-transform">
             <Scan className="w-4 h-4 text-white" />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
-              <span className="font-display font-bold text-lg text-[#0f172a] tracking-tight">
+              <span className="font-display font-bold text-base sm:text-lg text-[#0f172a] tracking-tight">
                 Agri<span className="text-[#008C45]">Sentinel</span>
               </span>
-              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-[#f0fdf4] border border-[#bbf7d0] text-[#008C45] font-semibold tracking-wider uppercase">
+              <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[#f0fdf4] border border-[#bbf7d0] text-[#008C45] font-semibold tracking-wider uppercase">
                 AGRI-AI
               </span>
             </div>
-            <span className="text-[10px] text-[#64748b] font-medium tracking-wide">
+            <span className="text-[9px] text-[#64748b] font-medium tracking-wide">
               UAV & Geospatial Intelligence Platform
             </span>
           </div>
@@ -221,29 +221,29 @@ export const SignupPage: React.FC = () => {
         {/* Back to Platform Pill Link */}
         <Link
           to="/"
-          className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full border border-gray-200/90 bg-white hover:bg-gray-50 text-[#0f172a] hover:text-[#008C45] text-xs font-semibold shadow-xs transition-all"
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-gray-200/90 bg-white hover:bg-gray-50 text-[#0f172a] hover:text-[#008C45] text-xs font-semibold shadow-xs transition-all"
         >
           <ArrowLeft className="w-3.5 h-3.5 text-[#64748b]" />
           <span>Back to Platform</span>
         </Link>
       </header>
 
-      {/* Main Two-Column Layout */}
-      <main className="flex-1 min-h-0 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex items-center justify-center z-10 py-6 overflow-y-auto">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+      {/* Main Two-Column Layout - Perfectly constrained to fill remaining viewport without vertical scrolling */}
+      <main className="flex-1 min-h-0 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex items-center justify-center z-10 overflow-hidden py-2 sm:py-3">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
           
-          {/* LEFT SECTION (50% on desktop): Animated UAV Showcase */}
-          <div className="lg:col-span-6 flex flex-col justify-center max-w-xl mx-auto lg:mx-0">
+          {/* LEFT SECTION (55% on desktop): Animated UAV Showcase */}
+          <div className="lg:col-span-6 xl:col-span-7 flex flex-col justify-center max-w-lg lg:max-w-xl mx-auto lg:mx-0">
             <AuthUavShowcase />
           </div>
 
-          {/* RIGHT SECTION (50% on desktop): Clean White Card with Roles & Multi-step forms */}
-          <div className="lg:col-span-6 flex justify-center lg:justify-end w-full">
-            <div className="w-full max-w-xl bg-white border border-gray-200/90 rounded-2xl sm:rounded-3xl p-6 sm:p-8 shadow-xl shadow-slate-200/50 relative">
+          {/* RIGHT SECTION (45% on desktop): Clean White Card with compact layout */}
+          <div className="lg:col-span-6 xl:col-span-5 flex justify-center lg:justify-end w-full">
+            <div className="w-full max-w-[460px] bg-white border border-gray-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-7 shadow-xl shadow-slate-200/50 relative flex flex-col justify-center">
               
               {/* Error Banner */}
               {errorMessage && (
-                <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5 text-xs text-red-700">
+                <div className="mb-3 p-2.5 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2 text-xs text-red-700">
                   <AlertCircle className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
                   <span>{errorMessage}</span>
                 </div>
@@ -252,40 +252,40 @@ export const SignupPage: React.FC = () => {
               {/* STEP 0: ROLE SELECTION */}
               {selectedRole === null && (
                 <div>
-                  <div className="mb-6">
-                    <div className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] text-[10px] font-mono font-bold uppercase tracking-wider mb-2.5">
+                  <div className="mb-4">
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] text-[10px] font-mono font-bold uppercase tracking-wider mb-2">
                       <Sparkles className="w-3 h-3 text-[#008C45]" />
                       <span>ONBOARDING WORKFLOW</span>
                     </div>
-                    <h1 className="font-display font-bold text-2xl sm:text-3xl text-[#0f172a] tracking-tight">
+                    <h1 className="font-display font-bold text-xl sm:text-2xl text-[#0f172a] tracking-tight">
                       How will you use AgriSentinel?
                     </h1>
-                    <p className="text-xs sm:text-sm text-[#64748b] mt-1.5 leading-relaxed">
+                    <p className="text-xs text-[#64748b] mt-1 leading-relaxed">
                       Select your registration path to access tailored agricultural tools or official assessment workflows.
                     </p>
                   </div>
 
-                  <div className="space-y-3.5">
+                  <div className="space-y-3">
                     {/* Option A: Farmer Card */}
                     <div 
                       onClick={() => setSelectedRole('FARMER')}
-                      className="p-5 rounded-2xl border-2 border-emerald-500/30 hover:border-[#008C45] bg-emerald-50/20 hover:bg-emerald-50/40 cursor-pointer transition-all duration-200 group shadow-xs hover:shadow-md"
+                      className="p-3.5 sm:p-4 rounded-xl border-2 border-emerald-500/30 hover:border-[#008C45] bg-emerald-50/20 hover:bg-emerald-50/40 cursor-pointer transition-all duration-200 group shadow-xs hover:shadow-md"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="w-10 h-10 rounded-xl bg-[#ecfdf5] border border-[#a7f3d0] flex items-center justify-center text-[#008C45] group-hover:scale-105 transition-transform">
-                          <Tractor className="w-5 h-5" />
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="w-8 h-8 rounded-lg bg-[#ecfdf5] border border-[#a7f3d0] flex items-center justify-center text-[#008C45] group-hover:scale-105 transition-transform">
+                          <Tractor className="w-4 h-4" />
                         </div>
-                        <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] font-bold">
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] font-bold">
                           INSTANT REGISTRATION
                         </span>
                       </div>
-                      <h3 className="font-display font-bold text-lg text-[#0f172a] group-hover:text-[#008C45] transition-colors">
+                      <h3 className="font-display font-bold text-base text-[#0f172a] group-hover:text-[#008C45] transition-colors">
                         Farmer
                       </h3>
-                      <p className="text-xs text-[#64748b] mt-1 leading-relaxed">
+                      <p className="text-xs text-[#64748b] mt-0.5 leading-snug">
                         Register your agricultural fields, manage harvest records and access field assessment insights.
                       </p>
-                      <div className="mt-3 pt-2.5 border-t border-emerald-100 flex items-center justify-between text-xs font-mono text-[#008C45] font-bold">
+                      <div className="mt-2.5 pt-2 border-t border-emerald-100 flex items-center justify-between text-xs font-mono text-[#008C45] font-bold">
                         <span>Register as Farmer</span>
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                       </div>
@@ -294,30 +294,30 @@ export const SignupPage: React.FC = () => {
                     {/* Option B: Government Official Card */}
                     <div 
                       onClick={() => setSelectedRole('GOVERNMENT_OFFICIAL')}
-                      className="p-5 rounded-2xl border-2 border-sky-500/30 hover:border-[#0284c7] bg-sky-50/20 hover:bg-sky-50/40 cursor-pointer transition-all duration-200 group shadow-xs hover:shadow-md"
+                      className="p-3.5 sm:p-4 rounded-xl border-2 border-sky-500/30 hover:border-[#0284c7] bg-sky-50/20 hover:bg-sky-50/40 cursor-pointer transition-all duration-200 group shadow-xs hover:shadow-md"
                     >
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-[#0284c7] group-hover:scale-105 transition-transform">
-                          <Landmark className="w-5 h-5" />
+                      <div className="flex items-center justify-between mb-1.5">
+                        <div className="w-8 h-8 rounded-lg bg-sky-50 border border-sky-200 flex items-center justify-center text-[#0284c7] group-hover:scale-105 transition-transform">
+                          <Landmark className="w-4 h-4" />
                         </div>
-                        <span className="text-[10px] font-mono px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold">
+                        <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold">
                           REQUIRES APPROVAL
                         </span>
                       </div>
-                      <h3 className="font-display font-bold text-lg text-[#0f172a] group-hover:text-[#0284c7] transition-colors">
+                      <h3 className="font-display font-bold text-base text-[#0f172a] group-hover:text-[#0284c7] transition-colors">
                         Government Official
                       </h3>
-                      <p className="text-xs text-[#64748b] mt-1 leading-relaxed">
+                      <p className="text-xs text-[#64748b] mt-0.5 leading-snug">
                         Access authorized agricultural assessment records, review field information and monitor reports.
                       </p>
-                      <div className="mt-3 pt-2.5 border-t border-sky-100 flex items-center justify-between text-xs font-mono text-[#0284c7] font-bold">
+                      <div className="mt-2.5 pt-2 border-t border-sky-100 flex items-center justify-between text-xs font-mono text-[#0284c7] font-bold">
                         <span>Request Official Access</span>
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-6 text-center text-xs text-[#64748b]">
+                  <div className="mt-4 text-center text-xs text-[#64748b]">
                     Already have an account?{' '}
                     <Link to="/login" className="text-[#008C45] hover:text-[#007038] font-bold hover:underline">
                       Sign in here
@@ -328,9 +328,9 @@ export const SignupPage: React.FC = () => {
 
               {/* FARMER REGISTRATION MULTI-STEP FLOW */}
               {selectedRole === 'FARMER' && !farmerSuccess && (
-                <div>
+                <div className="max-h-[calc(100dvh-130px)] overflow-y-auto pr-1">
                   {/* Stepper Header */}
-                  <div className="mb-5 flex items-center justify-between pb-3 border-b border-gray-100">
+                  <div className="mb-3.5 flex items-center justify-between pb-2 border-b border-gray-100">
                     <button 
                       onClick={() => {
                         if (farmerStep > 1) setFarmerStep(farmerStep - 1);
@@ -348,14 +348,14 @@ export const SignupPage: React.FC = () => {
                         {farmerStep === 1 && "Personal Info"}
                         {farmerStep === 2 && "Field Location"}
                         {farmerStep === 3 && "Agriculture Data"}
-                        {farmerStep === 4 && "Consent & Verification"}
+                        {farmerStep === 4 && "Consent"}
                       </strong>
                     </div>
                   </div>
 
                   {/* STEP 1: PERSONAL INFORMATION */}
                   {farmerStep === 1 && (
-                    <div className="space-y-3.5">
+                    <div className="space-y-3">
                       <div>
                         <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                           Full Name *
@@ -366,11 +366,11 @@ export const SignupPage: React.FC = () => {
                           value={farmerData.full_name} 
                           onChange={(e) => setFarmerData({...farmerData, full_name: e.target.value})}
                           placeholder="e.g. Ramesh Chandra Sahoo"
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         />
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
                           <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                             Mobile Number *
@@ -380,8 +380,8 @@ export const SignupPage: React.FC = () => {
                             required
                             value={farmerData.mobile_number} 
                             onChange={(e) => setFarmerData({...farmerData, mobile_number: e.target.value})}
-                            placeholder="10-digit number (e.g. 9437123456)"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            placeholder="10-digit number"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           />
                         </div>
                         <div>
@@ -393,12 +393,12 @@ export const SignupPage: React.FC = () => {
                             value={farmerData.email} 
                             onChange={(e) => setFarmerData({...farmerData, email: e.target.value})}
                             placeholder="farmer@example.com"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
                           <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                             Password *
@@ -409,7 +409,7 @@ export const SignupPage: React.FC = () => {
                             value={farmerData.password} 
                             onChange={(e) => setFarmerData({...farmerData, password: e.target.value})}
                             placeholder="Min 8 characters"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           />
                         </div>
                         <div>
@@ -422,7 +422,7 @@ export const SignupPage: React.FC = () => {
                             value={farmerData.confirm_password} 
                             onChange={(e) => setFarmerData({...farmerData, confirm_password: e.target.value})}
                             placeholder="Re-enter password"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           />
                         </div>
                       </div>
@@ -434,7 +434,7 @@ export const SignupPage: React.FC = () => {
                         <select 
                           value={farmerData.preferred_language}
                           onChange={(e) => setFarmerData({...farmerData, preferred_language: e.target.value})}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         >
                           <option value="Odia">Odia (ଓଡ଼ିଆ)</option>
                           <option value="English">English</option>
@@ -456,18 +456,18 @@ export const SignupPage: React.FC = () => {
                           setErrorMessage(null);
                           setFarmerStep(2);
                         }}
-                        className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-[#008C45] to-[#007338] hover:from-[#007a3c] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] cursor-pointer"
+                        className="w-full mt-2 py-2.5 rounded-xl bg-gradient-to-r from-[#008C45] to-[#007338] hover:from-[#007a3c] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] cursor-pointer"
                       >
                         <span>Continue to Location</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}
 
                   {/* STEP 2: LOCATION INFORMATION (Odisha Dropdowns) */}
                   {farmerStep === 2 && (
-                    <div className="space-y-3.5">
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="space-y-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
                           <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                             State
@@ -476,7 +476,7 @@ export const SignupPage: React.FC = () => {
                             type="text" 
                             disabled 
                             value={farmerData.state} 
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-xs sm:text-sm text-gray-500 font-mono"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-200 bg-gray-50 text-xs text-gray-500 font-mono"
                           />
                         </div>
 
@@ -491,7 +491,7 @@ export const SignupPage: React.FC = () => {
                               const firstBlock = ODISHA_LOCATIONS[newDist]?.[0] || 'Block';
                               setFarmerData({...farmerData, district: newDist, sub_district: firstBlock});
                             }}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           >
                             {Object.keys(ODISHA_LOCATIONS).map((dist) => (
                               <option key={dist} value={dist}>{dist}</option>
@@ -500,7 +500,7 @@ export const SignupPage: React.FC = () => {
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
                           <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                             Sub-District / Block *
@@ -508,7 +508,7 @@ export const SignupPage: React.FC = () => {
                           <select 
                             value={farmerData.sub_district}
                             onChange={(e) => setFarmerData({...farmerData, sub_district: e.target.value})}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           >
                             {(ODISHA_LOCATIONS[farmerData.district] || []).map((b) => (
                               <option key={b} value={b}>{b}</option>
@@ -525,13 +525,13 @@ export const SignupPage: React.FC = () => {
                             required
                             value={farmerData.pin_code}
                             onChange={(e) => setFarmerData({...farmerData, pin_code: e.target.value})}
-                            placeholder="6-digit PIN (e.g. 754202)"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            placeholder="6-digit PIN"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
                           <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                             Village / Mauza *
@@ -542,7 +542,7 @@ export const SignupPage: React.FC = () => {
                             value={farmerData.village}
                             onChange={(e) => setFarmerData({...farmerData, village: e.target.value})}
                             placeholder="Village name"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           />
                         </div>
 
@@ -555,7 +555,7 @@ export const SignupPage: React.FC = () => {
                             value={farmerData.gram_panchayat}
                             onChange={(e) => setFarmerData({...farmerData, gram_panchayat: e.target.value})}
                             placeholder="GP name"
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] placeholder:text-gray-400 focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           />
                         </div>
                       </div>
@@ -570,17 +570,17 @@ export const SignupPage: React.FC = () => {
                           setErrorMessage(null);
                           setFarmerStep(3);
                         }}
-                        className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-[#008C45] to-[#007338] hover:from-[#007a3c] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] cursor-pointer"
+                        className="w-full mt-2 py-2.5 rounded-xl bg-gradient-to-r from-[#008C45] to-[#007338] hover:from-[#007a3c] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] cursor-pointer"
                       >
                         <span>Continue to Agricultural Info</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}
 
                   {/* STEP 3: AGRICULTURAL INFORMATION */}
                   {farmerStep === 3 && (
-                    <div className="space-y-3.5">
+                    <div className="space-y-3">
                       <div>
                         <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                           Primary Harvest Crop
@@ -588,7 +588,7 @@ export const SignupPage: React.FC = () => {
                         <select 
                           value={farmerData.primary_crop}
                           onChange={(e) => setFarmerData({...farmerData, primary_crop: e.target.value})}
-                          className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         >
                           <option value="Paddy (Swarna - MTU 7029)">Paddy (Swarna - MTU 7029)</option>
                           <option value="Paddy (Pooja - CR 1009)">Paddy (Pooja - CR 1009)</option>
@@ -598,7 +598,7 @@ export const SignupPage: React.FC = () => {
                         </select>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
                           <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                             Land Ownership Type
@@ -606,7 +606,7 @@ export const SignupPage: React.FC = () => {
                           <select 
                             value={farmerData.land_ownership_type}
                             onChange={(e) => setFarmerData({...farmerData, land_ownership_type: e.target.value})}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           >
                             <option value="Owner">Owner / Cultivator</option>
                             <option value="Tenant">Tenant Farmer</option>
@@ -624,12 +624,12 @@ export const SignupPage: React.FC = () => {
                             min="0.1"
                             value={farmerData.approximate_land_area}
                             onChange={(e) => setFarmerData({...farmerData, approximate_land_area: parseFloat(e.target.value) || 1.0})}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           />
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                         <div>
                           <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                             Farming Category
@@ -637,7 +637,7 @@ export const SignupPage: React.FC = () => {
                           <select 
                             value={farmerData.farming_category}
                             onChange={(e) => setFarmerData({...farmerData, farming_category: e.target.value})}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           >
                             <option value="Marginal">Marginal (&lt; 1 Ha)</option>
                             <option value="Small">Small (1 - 2 Ha)</option>
@@ -648,7 +648,7 @@ export const SignupPage: React.FC = () => {
 
                         <div>
                           <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
-                            Number of Field Parcels
+                            Field Parcels
                           </label>
                           <input 
                             type="number" 
@@ -656,85 +656,81 @@ export const SignupPage: React.FC = () => {
                             max="20"
                             value={farmerData.number_of_fields}
                             onChange={(e) => setFarmerData({...farmerData, number_of_fields: parseInt(e.target.value, 10) || 1})}
-                            className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 bg-white text-xs sm:text-sm text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                            className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                           />
                         </div>
                       </div>
 
-                      <p className="text-[11px] text-[#64748b]">
-                        * Field boundaries and parcel polygons can be drawn interactively on satellite maps after account registration.
-                      </p>
-
                       <button
                         type="button"
                         onClick={() => setFarmerStep(4)}
-                        className="w-full mt-3 py-3 rounded-xl bg-gradient-to-r from-[#008C45] to-[#007338] hover:from-[#007a3c] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] cursor-pointer"
+                        className="w-full mt-2 py-2.5 rounded-xl bg-gradient-to-r from-[#008C45] to-[#007338] hover:from-[#007a3c] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] cursor-pointer"
                       >
                         <span>Continue to Consent & Verification</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   )}
 
                   {/* STEP 4: CONSENT & VERIFICATION */}
                   {farmerStep === 4 && (
-                    <div className="space-y-3.5">
-                      <div className="p-4 rounded-xl bg-gray-50 border border-gray-200 space-y-2.5 text-xs text-[#334155]">
-                        <label className="flex items-start gap-2.5 cursor-pointer">
+                    <div className="space-y-3">
+                      <div className="p-3 rounded-xl bg-gray-50 border border-gray-200 space-y-2 text-xs text-[#334155]">
+                        <label className="flex items-start gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
                             checked={farmerData.consent_terms}
                             onChange={(e) => setFarmerData({...farmerData, consent_terms: e.target.checked})}
-                            className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-[#008C45]"
+                            className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 accent-[#008C45]"
                           />
-                          <span>I accept the <strong>Terms & Conditions</strong> of the AgriSentinel agricultural platform.</span>
+                          <span className="text-[11px] leading-tight">I accept the <strong>Terms & Conditions</strong> of AgriSentinel.</span>
                         </label>
 
-                        <label className="flex items-start gap-2.5 cursor-pointer">
+                        <label className="flex items-start gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
                             checked={farmerData.consent_privacy}
                             onChange={(e) => setFarmerData({...farmerData, consent_privacy: e.target.checked})}
-                            className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-[#008C45]"
+                            className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 accent-[#008C45]"
                           />
-                          <span>I acknowledge the <strong>Privacy Notice</strong> regarding agricultural data governance.</span>
+                          <span className="text-[11px] leading-tight">I acknowledge the <strong>Privacy Notice</strong> on data governance.</span>
                         </label>
 
-                        <label className="flex items-start gap-2.5 cursor-pointer">
+                        <label className="flex items-start gap-2 cursor-pointer">
                           <input 
                             type="checkbox" 
                             checked={farmerData.consent_field_data}
                             onChange={(e) => setFarmerData({...farmerData, consent_field_data: e.target.checked})}
-                            className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-[#008C45]"
+                            className="mt-0.5 w-3.5 h-3.5 rounded border-gray-300 accent-[#008C45]"
                           />
-                          <span>I consent to <strong>UAV aerial imagery capture</strong> and photogrammetric heap volume processing for my registered parcels.</span>
+                          <span className="text-[11px] leading-tight">I consent to <strong>UAV aerial imagery capture</strong> & photogrammetry.</span>
                         </label>
                       </div>
 
                       {/* Development Mock OTP Notification */}
-                      <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-[#008C45]">
-                        <div className="flex items-center gap-1.5 font-bold mb-0.5">
-                          <ShieldCheck className="w-4 h-4" />
+                      <div className="p-2.5 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-[#008C45]">
+                        <div className="flex items-center gap-1.5 font-bold text-[11px] mb-0.5">
+                          <ShieldCheck className="w-3.5 h-3.5" />
                           <span>Development Mode OTP Verification</span>
                         </div>
-                        <div className="text-emerald-700">Default mock verification OTP is pre-filled: <strong>123456</strong></div>
+                        <div className="text-emerald-700 text-[10px]">Pre-filled mock OTP code: <strong>123456</strong></div>
                       </div>
 
                       <button
                         type="button"
                         disabled={isSubmitting}
                         onClick={handleFarmerSubmit}
-                        className="w-full py-3 px-6 rounded-xl bg-gradient-to-r from-[#008C45] to-[#007338] hover:from-[#007a3c] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer"
+                        className="w-full py-2.5 px-5 rounded-xl bg-gradient-to-r from-[#008C45] to-[#007338] hover:from-[#007a3c] text-white font-mono font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all active:scale-[0.99] disabled:opacity-60 cursor-pointer"
                       >
                         {isSubmitting ? (
                           <>
-                            <Loader2 className="w-4 h-4 animate-spin text-white" />
-                            <span>Creating Farmer Profile...</span>
+                            <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                            <span>Creating Profile...</span>
                           </>
                         ) : (
                           <>
                             <span>Complete Registration</span>
-                            <CheckCircle2 className="w-4 h-4" />
+                            <CheckCircle2 className="w-3.5 h-3.5" />
                           </>
                         )}
                       </button>
@@ -745,18 +741,18 @@ export const SignupPage: React.FC = () => {
 
               {/* FARMER SUCCESS SCREEN */}
               {farmerSuccess && (
-                <div className="py-8 text-center flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full bg-emerald-50 border-2 border-[#008C45] flex items-center justify-center mb-4 shadow-sm">
-                    <CheckCircle2 className="w-9 h-9 text-[#008C45]" />
+                <div className="py-6 text-center flex flex-col items-center">
+                  <div className="w-14 h-14 rounded-full bg-emerald-50 border-2 border-[#008C45] flex items-center justify-center mb-3 shadow-sm">
+                    <CheckCircle2 className="w-8 h-8 text-[#008C45]" />
                   </div>
-                  <h2 className="font-display font-bold text-2xl text-[#0f172a]">
+                  <h2 className="font-display font-bold text-xl sm:text-2xl text-[#0f172a]">
                     Welcome to AgriSentinel!
                   </h2>
-                  <p className="text-[#64748b] text-xs sm:text-sm mt-1.5 max-w-sm">
+                  <p className="text-[#64748b] text-xs mt-1 max-w-sm">
                     Your farmer account has been created successfully. Redirecting to your agricultural dashboard...
                   </p>
-                  <div className="mt-5 flex items-center gap-2 text-xs font-mono text-[#008C45]">
-                    <Loader2 className="w-4 h-4 animate-spin" />
+                  <div className="mt-4 flex items-center gap-2 text-xs font-mono text-[#008C45]">
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
                     <span>Loading Farmer Portal...</span>
                   </div>
                 </div>
@@ -764,8 +760,8 @@ export const SignupPage: React.FC = () => {
 
               {/* GOVERNMENT OFFICIAL ACCESS REQUEST FORM */}
               {selectedRole === 'GOVERNMENT_OFFICIAL' && !officialSubmitted && (
-                <div>
-                  <div className="mb-5 flex items-center justify-between pb-3 border-b border-gray-100">
+                <div className="max-h-[calc(100dvh-130px)] overflow-y-auto pr-1">
+                  <div className="mb-3.5 flex items-center justify-between pb-2 border-b border-gray-100">
                     <button 
                       onClick={() => setSelectedRole(null)}
                       className="flex items-center gap-1 text-xs text-[#64748b] hover:text-[#0f172a] font-medium"
@@ -774,20 +770,20 @@ export const SignupPage: React.FC = () => {
                       <span>Back to Roles</span>
                     </button>
 
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold">
+                    <span className="text-[9px] font-mono px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold">
                       OFFICIAL ACCESS REQUEST
                     </span>
                   </div>
 
-                  <div className="mb-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start gap-2.5">
-                    <Clock className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
-                    <span>
-                      <strong>Verification Notice:</strong> Government access is subject to organization verification and administrator approval.
+                  <div className="mb-3 p-2.5 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-800 flex items-start gap-2">
+                    <Clock className="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5" />
+                    <span className="text-[11px] leading-tight">
+                      <strong>Verification Notice:</strong> Access is subject to official verification and admin approval.
                     </span>
                   </div>
 
-                  <form onSubmit={handleOfficialSubmit} className="space-y-3">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <form onSubmit={handleOfficialSubmit} className="space-y-2.5">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <div>
                         <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                           Full Name *
@@ -797,8 +793,8 @@ export const SignupPage: React.FC = () => {
                           required
                           value={officialData.full_name}
                           onChange={(e) => setOfficialData({...officialData, full_name: e.target.value})}
-                          placeholder="e.g. Dr. Subhashree Dash"
-                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          placeholder="Dr. Subhashree Dash"
+                          className="w-full px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         />
                       </div>
 
@@ -812,12 +808,12 @@ export const SignupPage: React.FC = () => {
                           value={officialData.official_email}
                           onChange={(e) => setOfficialData({...officialData, official_email: e.target.value})}
                           placeholder="official@odisha.gov.in"
-                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          className="w-full px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <div>
                         <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
                           Mobile Number *
@@ -828,7 +824,7 @@ export const SignupPage: React.FC = () => {
                           value={officialData.mobile_number}
                           onChange={(e) => setOfficialData({...officialData, mobile_number: e.target.value})}
                           placeholder="10-digit number"
-                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          className="w-full px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         />
                       </div>
 
@@ -842,15 +838,15 @@ export const SignupPage: React.FC = () => {
                           value={officialData.password}
                           onChange={(e) => setOfficialData({...officialData, password: e.target.value})}
                           placeholder="Min 8 characters"
-                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          className="w-full px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <div>
                         <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
-                          Department / Ministry *
+                          Department *
                         </label>
                         <input 
                           type="text" 
@@ -858,34 +854,34 @@ export const SignupPage: React.FC = () => {
                           value={officialData.department}
                           onChange={(e) => setOfficialData({...officialData, department: e.target.value})}
                           placeholder="Dept of Agriculture"
-                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          className="w-full px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         />
                       </div>
 
                       <div>
                         <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
-                          Official Designation *
+                          Designation *
                         </label>
                         <input 
                           type="text" 
                           required
                           value={officialData.designation}
                           onChange={(e) => setOfficialData({...officialData, designation: e.target.value})}
-                          placeholder="District Agricultural Officer"
-                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          placeholder="Agricultural Officer"
+                          className="w-full px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         />
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
                       <div>
                         <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
-                          Jurisdiction District *
+                          District *
                         </label>
                         <select 
                           value={officialData.requested_district}
                           onChange={(e) => setOfficialData({...officialData, requested_district: e.target.value})}
-                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          className="w-full px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         >
                           {Object.keys(ODISHA_LOCATIONS).map((dist) => (
                             <option key={dist} value={dist}>{dist}</option>
@@ -895,21 +891,21 @@ export const SignupPage: React.FC = () => {
 
                       <div>
                         <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
-                          Invitation Code (Optional)
+                          Invitation Code
                         </label>
                         <input 
                           type="text" 
                           value={officialData.invitation_code}
                           onChange={(e) => setOfficialData({...officialData, invitation_code: e.target.value})}
                           placeholder="e.g. ODISHA-AGRI-2026"
-                          className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                          className="w-full px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                         />
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-[10px] font-mono uppercase tracking-wider font-bold text-[#475569] mb-1">
-                        Reason for Access Request *
+                        Reason for Access Scope *
                       </label>
                       <textarea 
                         required
@@ -917,7 +913,7 @@ export const SignupPage: React.FC = () => {
                         value={officialData.reason}
                         onChange={(e) => setOfficialData({...officialData, reason: e.target.value})}
                         placeholder="Explain your operational responsibility and required access scope..."
-                        className="w-full px-3 py-2 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
+                        className="w-full px-3 py-1.5 rounded-xl border border-gray-300 bg-white text-xs text-[#0f172a] focus:outline-none focus:border-[#008C45] focus:ring-2 focus:ring-[#008C45]/15 transition-all"
                       />
                     </div>
 
@@ -928,13 +924,13 @@ export const SignupPage: React.FC = () => {
                     >
                       {isSubmitting ? (
                         <>
-                          <Loader2 className="w-4 h-4 animate-spin text-white" />
-                          <span>Submitting Official Request...</span>
+                          <Loader2 className="w-3.5 h-3.5 animate-spin text-white" />
+                          <span>Submitting Request...</span>
                         </>
                       ) : (
                         <>
                           <span>Submit Official Request</span>
-                          <ArrowRight className="w-4 h-4" />
+                          <ArrowRight className="w-3.5 h-3.5" />
                         </>
                       )}
                     </button>
@@ -944,22 +940,22 @@ export const SignupPage: React.FC = () => {
 
               {/* OFFICIAL SUBMITTED PENDING SCREEN */}
               {officialSubmitted && (
-                <div className="py-8 text-center flex flex-col items-center">
-                  <div className="w-16 h-16 rounded-full bg-amber-50 border-2 border-amber-300 flex items-center justify-center mb-4">
-                    <Clock className="w-8 h-8 text-amber-600" />
+                <div className="py-6 text-center flex flex-col items-center">
+                  <div className="w-14 h-14 rounded-full bg-amber-50 border-2 border-amber-300 flex items-center justify-center mb-3">
+                    <Clock className="w-7 h-7 text-amber-600" />
                   </div>
-                  <h2 className="font-display font-bold text-2xl text-[#0f172a]">
+                  <h2 className="font-display font-bold text-xl text-[#0f172a]">
                     Access Request Submitted
                   </h2>
-                  <div className="mt-2.5 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-mono text-amber-800 font-bold">
+                  <div className="mt-2 px-2.5 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-xs font-mono text-amber-800 font-bold">
                     STATUS: PENDING ADMINISTRATOR APPROVAL
                   </div>
-                  <p className="text-[#64748b] text-xs sm:text-sm mt-3 max-w-sm leading-relaxed">
-                    Your official access request for <strong>{officialData.official_email}</strong> has been logged. An administrator will review your credentials before authorized portal access is granted.
+                  <p className="text-[#64748b] text-xs mt-2.5 max-w-sm leading-relaxed">
+                    Your official access request for <strong>{officialData.official_email}</strong> has been logged. An administrator will review your credentials before access is granted.
                   </p>
                   <Link
                     to="/login"
-                    className="mt-6 px-6 py-2.5 rounded-xl bg-[#008C45] hover:bg-[#007338] text-white font-mono text-xs uppercase tracking-wider font-bold shadow-md transition-all"
+                    className="mt-4 px-5 py-2 rounded-xl bg-[#008C45] hover:bg-[#007338] text-white font-mono text-xs uppercase tracking-wider font-bold shadow-md transition-all"
                   >
                     Return to Sign In
                   </Link>
