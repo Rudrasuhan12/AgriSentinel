@@ -6,19 +6,20 @@ import {
   Plane, 
   Box, 
   BarChart3, 
-  Layers, 
   Cpu, 
   Info,
   CheckCircle2,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Boxes
 } from 'lucide-react';
 import { Interactive3DHeapViewer } from './Interactive3DHeapViewer';
 
 export const PlatformPreviewSection: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'map' | 'register' | 'uav' | 'heap' | 'dashboard'>('map');
+  // Default to 3D Heap Reconstruction as requested so it's immediately visible below Hero
+  const [activeTab, setActiveTab] = useState<'heap' | 'map' | 'register' | 'uav' | 'dashboard'>('heap');
   const [animatedArea, setAnimatedArea] = useState<number>(0);
 
-  // Animated counter for field area when map tab is active
+  // Animated counter for field area when map tab is selected
   useEffect(() => {
     if (activeTab === 'map') {
       let current = 0;
@@ -38,30 +39,33 @@ export const PlatformPreviewSection: React.FC = () => {
   }, [activeTab]);
 
   const tabs = [
+    { id: 'heap', label: '3D Heap Reconstruction', icon: Box },
     { id: 'map', label: 'Field GIS Map', icon: Map },
     { id: 'register', label: 'Parcel Registration', icon: UserPlus },
     { id: 'uav', label: 'UAV Mission Hub', icon: Plane },
-    { id: 'heap', label: 'Heap 3D Reconstruction', icon: Box },
     { id: 'dashboard', label: 'Yield Analytics', icon: BarChart3 },
   ];
 
   return (
-    <section id="platform-preview" className="py-24 bg-charcoal-950 relative overflow-hidden">
+    <section 
+      id="heap-reconstruction" 
+      className="py-24 sm:py-28 bg-charcoal-950 relative overflow-hidden border-b border-forest-800/80"
+    >
       {/* Background radial glow */}
-      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-forest-900/30 blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[900px] h-[450px] bg-forest-900/35 blur-[160px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
-        {/* Section Header */}
+        {/* Section Header - Exact Required Content & Eyebrow */}
         <div className="text-center max-w-3xl mx-auto mb-14">
           <motion.div 
             initial={{ opacity: 0, y: 15 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-3 py-1 rounded bg-forest-900 border border-forest-700 text-[11px] font-mono uppercase tracking-widest text-lime-accent mb-4"
+            className="inline-flex items-center gap-2 px-3 py-1 rounded bg-forest-900 border border-lime-dim/60 text-[11px] font-mono uppercase tracking-widest text-lime-accent mb-4 shadow-sm"
           >
-            <Layers className="w-3.5 h-3.5" />
-            <span>ARCHITECTURE & INTERFACE CONCEPT</span>
+            <Boxes className="w-3.5 h-3.5 text-lime-accent" />
+            <span>INTERACTIVE SPATIAL INTELLIGENCE</span>
           </motion.div>
           
           <motion.h2 
@@ -71,9 +75,9 @@ export const PlatformPreviewSection: React.FC = () => {
             transition={{ delay: 0.1 }}
             className="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl text-sand-50 tracking-tight"
           >
-            Designed for Field Clarity <br className="hidden sm:inline" />
+            See Harvest Volume in{' '}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-accent to-emerald-400">
-              and Agronomic Precision.
+              Three Dimensions.
             </span>
           </motion.h2>
           
@@ -82,9 +86,9 @@ export const PlatformPreviewSection: React.FC = () => {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2 }}
-            className="text-sand-300 mt-4 text-base"
+            className="text-sand-300 mt-4 text-base sm:text-lg leading-relaxed"
           >
-            An intuitive operational interface bridging cadastral satellite boundaries, automated UAV flight plans, and 3D volumetric heap geometry.
+            Explore how multi-view UAV imagery can be transformed into 3D paddy heap geometry for volumetric assessment.
           </motion.p>
         </div>
 
@@ -111,7 +115,13 @@ export const PlatformPreviewSection: React.FC = () => {
         </div>
 
         {/* Mock Interface Canvas */}
-        <div className="rounded-2xl border border-forest-700/80 bg-charcoal-900 shadow-elevated overflow-hidden">
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="rounded-2xl border border-forest-700/80 bg-charcoal-900 shadow-elevated overflow-hidden"
+        >
           
           {/* Mock Window Top Bar */}
           <div className="bg-charcoal-950 border-b border-forest-800/80 px-4 py-3 flex items-center justify-between">
@@ -131,10 +141,24 @@ export const PlatformPreviewSection: React.FC = () => {
           </div>
 
           {/* Interactive Tab View Contents */}
-          <div className="p-6 sm:p-8 min-h-[500px] bg-charcoal-900/80">
+          <div className="p-4 sm:p-6 lg:p-8 min-h-[520px] bg-charcoal-900/80">
             <AnimatePresence mode="wait">
               
-              {/* TAB 1: FIELD GIS MAP with SVG polygon drawing & scanning line */}
+              {/* TAB 1 (PRIMARY): HEAP 3D RECONSTRUCTION with Three.js Interactive Component */}
+              {activeTab === 'heap' && (
+                <motion.div
+                  key="heap"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -10 }}
+                  transition={{ duration: 0.3 }}
+                  className="space-y-4"
+                >
+                  <Interactive3DHeapViewer height="520px" showControls={true} />
+                </motion.div>
+              )}
+
+              {/* TAB 2: FIELD GIS MAP with SVG polygon drawing & scanning line */}
               {activeTab === 'map' && (
                 <motion.div
                   key="map"
@@ -252,7 +276,7 @@ export const PlatformPreviewSection: React.FC = () => {
                 </motion.div>
               )}
 
-              {/* TAB 2: PARCEL REGISTRATION */}
+              {/* TAB 3: PARCEL REGISTRATION */}
               {activeTab === 'register' && (
                 <motion.div
                   key="register"
@@ -333,7 +357,7 @@ export const PlatformPreviewSection: React.FC = () => {
                 </motion.div>
               )}
 
-              {/* TAB 3: UAV MISSION HUB */}
+              {/* TAB 4: UAV MISSION HUB */}
               {activeTab === 'uav' && (
                 <motion.div
                   key="uav"
@@ -398,20 +422,6 @@ export const PlatformPreviewSection: React.FC = () => {
                 </motion.div>
               )}
 
-              {/* TAB 4: HEAP 3D RECONSTRUCTION with Three.js Interactive Component */}
-              {activeTab === 'heap' && (
-                <motion.div
-                  key="heap"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -10 }}
-                  transition={{ duration: 0.3 }}
-                  className="space-y-4"
-                >
-                  <Interactive3DHeapViewer height="460px" showControls={true} />
-                </motion.div>
-              )}
-
               {/* TAB 5: YIELD ANALYTICS DASHBOARD */}
               {activeTab === 'dashboard' && (
                 <motion.div
@@ -467,7 +477,7 @@ export const PlatformPreviewSection: React.FC = () => {
             </AnimatePresence>
           </div>
 
-        </div>
+        </motion.div>
 
       </div>
     </section>

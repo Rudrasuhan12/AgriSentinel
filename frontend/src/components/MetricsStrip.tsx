@@ -31,7 +31,7 @@ export const MetricsStrip: React.FC = () => {
   ];
 
   return (
-    <section className="relative z-20 bg-charcoal-900/90 border-y border-forest-800/80 py-8 backdrop-blur-md">
+    <section id="capabilities" className="relative z-20 bg-charcoal-900/90 border-b border-forest-800/80 py-8 backdrop-blur-md">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-8">
           {pillars.map((pillar, idx) => {
@@ -67,4 +67,3 @@ export const MetricsStrip: React.FC = () => {
     </section>
   );
 };
-

@@ -18,11 +18,12 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
 
   const navLinks = [
     { name: 'Home', href: '#hero', id: 'hero' },
+    { name: '3D Heap', href: '#heap-reconstruction', id: 'heap-reconstruction' },
+    { name: 'Capabilities', href: '#capabilities', id: 'capabilities' },
     { name: 'About', href: '#about', id: 'about' },
     { name: 'Technology', href: '#technology', id: 'technology' },
     { name: 'Workflow', href: '#workflow', id: 'workflow' },
     { name: 'Methodology', href: '#methodology', id: 'methodology' },
-    { name: 'Platform', href: '#platform-preview', id: 'platform-preview' },
     { name: 'Research', href: '#research', id: 'research' },
   ];
 
@@ -31,9 +32,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
 
-      // Section spy
       const sections = navLinks.map(l => document.getElementById(l.id));
-      const scrollPos = window.scrollY + 200;
+      const scrollPos = window.scrollY + 220;
 
       for (let i = sections.length - 1; i >= 0; i--) {
         const sec = sections[i];
@@ -81,7 +81,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
           </a>
 
           {/* Desktop Navigation Links with Active Spy Indicator */}
-          <nav className="hidden lg:flex items-center gap-7">
+          <nav className="hidden lg:flex items-center gap-6">
             {navLinks.map((link) => {
               const isActive = activeSection === link.id;
               return (
@@ -108,7 +108,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
           {/* Action CTAs */}
           <div className="hidden md:flex items-center gap-3">
             <a
-              href="#platform-preview"
+              href="#heap-reconstruction"
               className="text-xs uppercase font-mono text-sand-200 hover:text-sand-50 px-3.5 py-2 rounded-md border border-forest-700/60 hover:border-forest-600 bg-forest-950/40 transition-all active:scale-95"
             >
               System Specs

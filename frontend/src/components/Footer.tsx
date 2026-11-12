@@ -52,8 +52,8 @@ export const Footer: React.FC = () => {
                 </a>
               </li>
               <li>
-                <a href="#platform-preview" className="text-sand-400 hover:text-lime-accent transition-colors">
-                  Platform Studio
+                <a href="#heap-reconstruction" className="text-sand-400 hover:text-lime-accent transition-colors">
+                  3D Heap Studio
                 </a>
               </li>
             </ul>

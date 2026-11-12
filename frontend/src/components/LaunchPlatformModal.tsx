@@ -114,7 +114,7 @@ export const LaunchPlatformModal: React.FC<LaunchPlatformModalProps> = ({ isOpen
             {/* Quick jump buttons */}
             <div className="pt-2 border-t border-forest-800 flex flex-col sm:flex-row items-center gap-3">
               <a
-                href="#platform-preview"
+                href="#heap-reconstruction"
                 onClick={onClose}
                 className="w-full sm:w-auto flex-1 py-2.5 px-4 rounded-lg bg-lime-accent hover:bg-lime-glow text-charcoal-950 font-mono text-xs uppercase font-bold tracking-wider flex items-center justify-center gap-2 transition-all shadow-subtle-glow"
               >
