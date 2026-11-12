@@ -211,9 +211,7 @@ export const FarmerDashboard: React.FC = () => {
       // If there are surveys, use the first survey id; otherwise create one
       let srvId = surveys.length > 0 ? surveys[0].id : null;
       if (!srvId && summary?.parcels && summary.parcels.length > 0) {
-        const newSurvey = await api.post('/api/surveys', null, {
-          params: { parcel_id: summary.parcels[0].id }
-        });
+        const newSurvey = await api.post<any>(`/api/surveys?parcel_id=${summary.parcels[0].id}`);
         srvId = newSurvey.id;
       }
 

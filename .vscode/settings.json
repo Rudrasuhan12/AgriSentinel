@@ -6,9 +6,8 @@
   "python.autoComplete.extraPaths": [
     "${workspaceFolder}/backend"
   ],
-  "pyrefly.pythonPath": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
-  "pyrefly.searchPaths": [
-    "${workspaceFolder}/backend",
-    "${workspaceFolder}/backend/.venv/Lib/site-packages"
+  "pyrefly.python-interpreter-path": "${workspaceFolder}/backend/.venv/Scripts/python.exe",
+  "pyrefly.search-path": [
+    "${workspaceFolder}/backend"
   ]
 }
