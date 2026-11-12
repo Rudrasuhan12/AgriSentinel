@@ -10,12 +10,10 @@ import {
   ShieldCheck,
   Loader2,
   Scan,
-  Compass,
-  Layers,
-  Sprout,
   ArrowLeft
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { AuthUavShowcase } from '../components/auth/AuthUavShowcase';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
@@ -150,105 +148,13 @@ export const LoginPage: React.FC = () => {
         </Link>
       </header>
 
-      {/* Main Two-Column Container - Perfectly constrained to fill remaining viewport height without scrolling */}
+      {/* Main Two-Column Container - Fits in 100dvh without vertical scrolling on desktop */}
       <main className="flex-1 min-h-0 w-full max-w-7xl mx-auto px-6 sm:px-10 lg:px-14 flex items-center justify-center z-10 overflow-y-auto lg:overflow-hidden py-3 lg:py-0">
         <div className="w-full grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
           
-          {/* LEFT SECTION (55% on desktop): UAV/Geospatial Visual & Value Proposition */}
+          {/* LEFT SECTION (55% on desktop): Animated UAV/Geospatial Visual & Value Proposition */}
           <div className="lg:col-span-7 flex flex-col justify-center max-w-xl">
-            
-            {/* Aerial UAV Imagery Card with Interactive Telemetry HUD (matching reference screenshot) */}
-            <div className="relative w-full rounded-2xl overflow-hidden border border-gray-200 shadow-md aspect-[16/10] max-h-[220px] sm:max-h-[250px] lg:max-h-[270px] bg-slate-900 group">
-              <img 
-                src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?q=80&w=1200&auto=format&fit=crop" 
-                alt="Agricultural field at sunset surveyed by UAV" 
-                className="w-full h-full object-cover object-center filter saturate-[0.9] contrast-[1.05]"
-              />
-              
-              {/* Subtle Vignette Overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 pointer-events-none" />
-
-              {/* Top-Left Telemetry Tag */}
-              <div className="absolute top-3 left-3 px-2.5 py-1 rounded-md bg-black/70 backdrop-blur-md border border-white/10 text-white font-mono text-[9px] sm:text-[10px] tracking-wider uppercase">
-                PIXEL: 06-747 • T-4K IR
-              </div>
-
-              {/* Top-Right UAV Flight Telemetry Box */}
-              <div className="absolute top-3 right-3 px-2.5 py-1.5 rounded-lg bg-black/75 backdrop-blur-md border border-lime-400/30 text-white font-mono text-[9px] sm:text-[10px] flex items-center gap-2">
-                <div className="w-5 h-5 rounded bg-[#008C45]/80 flex items-center justify-center text-white">
-                  <Compass className="w-3 h-3 text-lime-300" />
-                </div>
-                <div className="leading-tight">
-                  <div className="text-lime-400 font-bold uppercase text-[8px] sm:text-[9px]">UAV SCANNING</div>
-                  <div className="text-slate-200 text-[8px] sm:text-[9px]">Alt: 35m • Overlap: 80%</div>
-                </div>
-              </div>
-
-              {/* SVG Field Polygon Boundary & Central Scanning Reticle */}
-              <svg className="absolute inset-0 w-full h-full pointer-events-none" viewBox="0 0 400 250">
-                {/* Geodesic Survey Polygon */}
-                <polygon
-                  points="65,65 315,55 350,195 85,205"
-                  fill="rgba(0, 140, 69, 0.12)"
-                  stroke="#38ef7d"
-                  strokeWidth="2"
-                  strokeDasharray="4,2"
-                />
-
-                {/* 4 Corner Vertices */}
-                <circle cx="65" cy="65" r="4.5" fill="#facc15" stroke="#ffffff" strokeWidth="1.5" />
-                <circle cx="315" cy="55" r="4.5" fill="#facc15" stroke="#ffffff" strokeWidth="1.5" />
-                <circle cx="350" cy="195" r="4.5" fill="#facc15" stroke="#ffffff" strokeWidth="1.5" />
-                <circle cx="85" cy="205" r="4.5" fill="#facc15" stroke="#ffffff" strokeWidth="1.5" />
-
-                {/* Central Targeting Reticle Circle */}
-                <circle cx="205" cy="140" r="32" stroke="#f59e0b" strokeWidth="1.5" fill="none" opacity="0.75" />
-                <circle cx="205" cy="140" r="3" fill="#f59e0b" />
-              </svg>
-
-              {/* Bottom-Left Metric Badge */}
-              <div className="absolute bottom-3 left-3 px-2.5 py-1.5 rounded-lg bg-black/75 backdrop-blur-md border border-emerald-500/30 text-emerald-400 font-mono text-[9px] sm:text-[10px] flex items-center gap-2">
-                <Layers className="w-3 h-3 text-emerald-300 shrink-0" />
-                <div>
-                  <div className="text-[8px] sm:text-[9px] text-slate-300 uppercase tracking-wider font-semibold">NDVI / VOLUME / MESH</div>
-                  <div className="text-lime-300 font-bold">14.82 ha | -1.4% Metric Tons</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Eyebrow Badge */}
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#ecfdf5] border border-[#a7f3d0] text-[#008C45] text-[10px] font-mono font-bold uppercase tracking-wider mt-4 mb-2 w-fit">
-              <Sprout className="w-3 h-3 text-[#008C45]" />
-              <span>UNIFIED AGRICULTURAL INTELLIGENCE</span>
-            </div>
-
-            {/* Editorial Heading */}
-            <h1 className="text-2xl sm:text-3xl lg:text-[32px] font-display font-extrabold text-[#0f172a] leading-tight tracking-tight">
-              Intelligence That Grows With <br className="hidden sm:inline" />
-              <span className="text-[#008C45]">Every Field.</span>
-            </h1>
-
-            {/* Platform Description */}
-            <p className="text-xs sm:text-sm text-[#475569] leading-relaxed mt-1.5 max-w-lg">
-              Connect agricultural field intelligence, UAV assessments and yield insights through one unified platform.
-            </p>
-
-            {/* Horizontal Feature Highlights Strip */}
-            <div className="flex items-center flex-wrap gap-y-2 mt-4 pt-3 border-t border-gray-100 text-xs text-[#334155] font-medium">
-              <div className="flex items-center gap-1.5 pr-4 border-r border-gray-200">
-                <Compass className="w-3.5 h-3.5 text-[#008C45]" />
-                <span>UAV Analytics</span>
-              </div>
-              <div className="flex items-center gap-1.5 px-4 border-r border-gray-200">
-                <Layers className="w-3.5 h-3.5 text-[#008C45]" />
-                <span>Geospatial Insights</span>
-              </div>
-              <div className="flex items-center gap-1.5 pl-4">
-                <Sprout className="w-3.5 h-3.5 text-[#008C45]" />
-                <span>Yield Intelligence</span>
-              </div>
-            </div>
-
+            <AuthUavShowcase />
           </div>
 
           {/* RIGHT SECTION (45% on desktop): Clean White Login Card */}
