@@ -42,6 +42,14 @@ class Settings(BaseSettings):
     MOCK_OTP_MODE: bool = True
     MOCK_OTP_CODE: str = "123456"
 
+    # Copernicus Data Space Ecosystem (Sentinel-2 L2A) Integration
+    COPERNICUS_CLIENT_ID: str = ""
+    COPERNICUS_CLIENT_SECRET: str = ""
+    COPERNICUS_AUTH_URL: str = "https://identity.dataspace.copernicus.eu/auth/realms/CDSE/protocol/openid-connect/token"
+    COPERNICUS_STAC_URL: str = "https://catalogue.dataspace.copernicus.eu/stac"
+    COPERNICUS_ODATA_URL: str = "https://catalogue.dataspace.copernicus.eu/odata/v1"
+    SENTINEL_HUB_PROCESS_URL: str = "https://sh.dataspace.copernicus.eu/api/v1/process"
+
     model_config = SettingsConfigDict(
         env_file=(".env", "../.env"),
         env_file_encoding="utf-8",

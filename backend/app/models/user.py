@@ -13,6 +13,8 @@ if TYPE_CHECKING:
     from app.models.official_request import OfficialAccessRequest
     from app.models.session import UserSession
     from app.models.consent import ConsentRecord
+    from app.models.parcel import FarmerParcel
+    from app.models.notification import FarmerNotification
 
 
 class UserRole(str, enum.Enum):
@@ -75,4 +77,10 @@ class User(Base):
     )
     consent_records: Mapped[List[ConsentRecord]] = relationship(
         "ConsentRecord", back_populates="user", cascade="all, delete-orphan"
+    )
+    parcels: Mapped[List[FarmerParcel]] = relationship(
+        "FarmerParcel", back_populates="farmer", cascade="all, delete-orphan"
+    )
+    notifications: Mapped[List[FarmerNotification]] = relationship(
+        "FarmerNotification", back_populates="farmer", cascade="all, delete-orphan"
     )

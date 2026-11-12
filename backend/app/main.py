@@ -6,6 +6,7 @@ from app.config import settings
 from app.core.bootstrap import init_db_tables, bootstrap_initial_admin
 from app.routers.auth import router as auth_router
 from app.routers.admin import router as admin_router
+from app.routers.farmer import router as farmer_router
 
 
 @asynccontextmanager
@@ -43,8 +44,10 @@ app.add_middleware(
 # Include Routers
 app.include_router(auth_router)
 app.include_router(admin_router)
+app.include_router(farmer_router)
 
 
+@app.get("", tags=["Root"], include_in_schema=False)
 @app.get("/", tags=["Root"])
 async def root():
     return {
@@ -59,7 +62,8 @@ async def root():
         "endpoints": {
             "health": "/health",
             "auth": "/api/auth",
-            "admin": "/api/admin"
+            "admin": "/api/admin",
+            "farmer": "/api/farmer",
         }
     }
 

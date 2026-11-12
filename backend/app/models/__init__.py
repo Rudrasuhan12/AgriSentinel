@@ -3,6 +3,13 @@ from app.models.farmer_profile import FarmerProfile
 from app.models.official_request import OfficialAccessRequest, ApprovalStatus
 from app.models.session import UserSession
 from app.models.consent import ConsentRecord
+from app.models.parcel import FarmerParcel, ParcelVerificationStatus
+from app.models.satellite import SatelliteObservation, SatelliteProcessingStatus
+from app.models.survey import UAVSurvey, FlightStatus
+from app.models.reconstruction import HeapReconstruction
+from app.models.certificate import YieldCertificate, CertificateStatus
+from app.models.notification import FarmerNotification, NotificationType
+from app.models.support import SupportContact
 
 __all__ = [
     "User",
@@ -13,5 +20,17 @@ __all__ = [
     "ApprovalStatus",
     "UserSession",
     "ConsentRecord",
+    "FarmerParcel",
+    "ParcelVerificationStatus",
+    "SatelliteObservation",
+    "SatelliteProcessingStatus",
+    "UAVSurvey",
+    "FlightStatus",
+    "HeapReconstruction",
+    "YieldCertificate",
+    "CertificateStatus",
+    "FarmerNotification",
+    "NotificationType",
+    "SupportContact",
 ]
 
