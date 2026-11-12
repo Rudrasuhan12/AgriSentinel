@@ -7,6 +7,16 @@ export default defineConfig({
   server: {
     port: 5173,
     host: '127.0.0.1'
+  },
+  build: {
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          'three-vendor': ['three'],
+          'motion-vendor': ['framer-motion'],
+          'lucide-vendor': ['lucide-react']
+        }
+      }
+    }
   }
 });
-

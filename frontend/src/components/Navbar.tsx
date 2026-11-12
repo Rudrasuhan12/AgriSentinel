@@ -4,7 +4,7 @@ import {
   Scan, 
   Menu, 
   X, 
-  ArrowUpRight
+  ArrowUpRight 
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -14,24 +14,39 @@ interface NavbarProps {
 export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [activeSection, setActiveSection] = useState('hero');
 
+  const navLinks = [
+    { name: 'Home', href: '#hero', id: 'hero' },
+    { name: 'About', href: '#about', id: 'about' },
+    { name: 'Technology', href: '#technology', id: 'technology' },
+    { name: 'Workflow', href: '#workflow', id: 'workflow' },
+    { name: 'Methodology', href: '#methodology', id: 'methodology' },
+    { name: 'Platform', href: '#platform-preview', id: 'platform-preview' },
+    { name: 'Research', href: '#research', id: 'research' },
+  ];
+
+  // Scroll spy to detect active section
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 20);
+
+      // Section spy
+      const sections = navLinks.map(l => document.getElementById(l.id));
+      const scrollPos = window.scrollY + 200;
+
+      for (let i = sections.length - 1; i >= 0; i--) {
+        const sec = sections[i];
+        if (sec && sec.offsetTop <= scrollPos) {
+          setActiveSection(navLinks[i].id);
+          break;
+        }
+      }
     };
-    window.addEventListener('scroll', handleScroll);
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  const navLinks = [
-    { name: 'Home', href: '#hero' },
-    { name: 'About', href: '#about' },
-    { name: 'Technology', href: '#technology' },
-    { name: 'Workflow', href: '#workflow' },
-    { name: 'Methodology', href: '#methodology' },
-    { name: 'Platform', href: '#platform-preview' },
-    { name: 'Research', href: '#research' },
-  ];
 
   return (
     <header
@@ -43,6 +58,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
+          
           {/* Brand Logo & Wordmark */}
           <a href="#hero" className="flex items-center gap-3 group focus:outline-none">
             <div className="relative w-10 h-10 rounded-lg bg-gradient-to-br from-forest-800 to-forest-900 border border-lime-dim flex items-center justify-center overflow-hidden shadow-subtle-glow group-hover:border-lime-accent/50 transition-colors">
@@ -64,32 +80,43 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
             </div>
           </a>
 
-          {/* Desktop Navigation Links */}
+          {/* Desktop Navigation Links with Active Spy Indicator */}
           <nav className="hidden lg:flex items-center gap-7">
-            {navLinks.map((link) => (
-              <a
-                key={link.name}
-                href={link.href}
-                className="text-xs uppercase font-mono tracking-wider text-sand-200/80 hover:text-lime-accent transition-colors relative py-1 group"
-              >
-                {link.name}
-                <span className="absolute bottom-0 left-0 w-0 h-[1.5px] bg-lime-accent transition-all duration-200 group-hover:w-full" />
-              </a>
-            ))}
+            {navLinks.map((link) => {
+              const isActive = activeSection === link.id;
+              return (
+                <a
+                  key={link.name}
+                  href={link.href}
+                  className={`text-xs uppercase font-mono tracking-wider transition-colors relative py-1 focus:outline-none ${
+                    isActive ? 'text-lime-accent font-semibold' : 'text-sand-200/80 hover:text-sand-50'
+                  }`}
+                >
+                  {link.name}
+                  {isActive && (
+                    <motion.span 
+                      layoutId="activeNavIndicator"
+                      className="absolute bottom-0 left-0 right-0 h-[2px] bg-lime-accent rounded-full shadow-subtle-glow"
+                      transition={{ type: "spring", stiffness: 380, damping: 30 }}
+                    />
+                  )}
+                </a>
+              );
+            })}
           </nav>
 
           {/* Action CTAs */}
           <div className="hidden md:flex items-center gap-3">
             <a
               href="#platform-preview"
-              className="text-xs uppercase font-mono text-sand-200 hover:text-sand-50 px-3.5 py-2 rounded-md border border-forest-700/60 hover:border-forest-600 bg-forest-950/40 transition-all"
+              className="text-xs uppercase font-mono text-sand-200 hover:text-sand-50 px-3.5 py-2 rounded-md border border-forest-700/60 hover:border-forest-600 bg-forest-950/40 transition-all active:scale-95"
             >
               System Specs
             </a>
 
             <button
               onClick={onOpenPreview}
-              className="relative group overflow-hidden px-4 py-2 rounded-md bg-gradient-to-r from-forest-700 to-forest-600 hover:from-forest-600 hover:to-forest-500 text-sand-50 text-xs uppercase font-mono tracking-wider font-semibold border border-lime-dim flex items-center gap-2 shadow-sm hover:shadow-subtle-glow transition-all"
+              className="relative group overflow-hidden px-4 py-2 rounded-md bg-gradient-to-r from-forest-700 to-forest-600 hover:from-forest-600 hover:to-forest-500 text-sand-50 text-xs uppercase font-mono tracking-wider font-semibold border border-lime-dim flex items-center gap-2 shadow-sm hover:shadow-subtle-glow transition-all active:scale-95"
             >
               <span className="relative z-10 flex items-center gap-1.5">
                 Launch Platform
@@ -117,15 +144,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenPreview }) => {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
+            transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
             className="lg:hidden bg-charcoal-950/95 backdrop-blur-xl border-b border-forest-800/80 px-4 pt-3 pb-6 shadow-2xl"
           >
-            <div className="flex flex-col gap-3 py-2">
+            <div className="flex flex-col gap-2 py-2">
               {navLinks.map((link) => (
                 <a
                   key={link.name}
                   href={link.href}
                   onClick={() => setMobileMenuOpen(false)}
-                  className="px-3 py-2 rounded-md text-sm font-mono tracking-wider text-sand-200 hover:text-lime-accent hover:bg-forest-900/40 transition-colors"
+                  className={`px-3 py-2 rounded-md text-sm font-mono tracking-wider transition-colors ${
+                    activeSection === link.id
+                      ? 'text-lime-accent bg-forest-900/60 font-semibold'
+                      : 'text-sand-200 hover:text-lime-accent hover:bg-forest-900/30'
+                  }`}
                 >
                   {link.name}
                 </a>

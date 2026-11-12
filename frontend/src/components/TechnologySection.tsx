@@ -98,33 +98,60 @@ export const TechnologySection: React.FC = () => {
 
   return (
     <section id="technology" className="py-24 bg-charcoal-900/60 relative overflow-hidden border-t border-forest-800/80">
+      {/* Background Subtle Moving Dot Grid */}
+      <div className="absolute inset-0 bg-geo-dots opacity-20 pointer-events-none" />
+
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Header */}
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-forest-900/70 border border-forest-700/80 text-[11px] font-mono uppercase tracking-widest text-lime-accent mb-4">
+          <motion.div 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="inline-flex items-center gap-2 px-3 py-1 rounded bg-forest-900/70 border border-forest-700/80 text-[11px] font-mono uppercase tracking-widest text-lime-accent mb-4"
+          >
             <Cpu className="w-3.5 h-3.5" />
             <span>FOUR-TIER ARCHITECTURAL ENGINE</span>
-          </div>
-          <h2 className="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl text-sand-50 tracking-tight">
+          </motion.div>
+
+          <motion.h2 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.1 }}
+            className="font-display font-extrabold text-3xl sm:text-4xl lg:text-5xl text-sand-50 tracking-tight"
+          >
             Technology Powered by <br className="hidden sm:inline" />
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-lime-accent to-emerald-400">
               Rigorous Geospatial Science.
             </span>
-          </h2>
-          <p className="text-sand-300 mt-4 text-base">
+          </motion.h2>
+
+          <motion.p 
+            initial={{ opacity: 0, y: 15 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.2 }}
+            className="text-sand-300 mt-4 text-base"
+          >
             Each subsystem operates as an integrated analytical module, translating raw aerial imagery into verifiable agronomic intelligence.
-          </p>
+          </motion.p>
         </div>
 
-        {/* Interactive Module Navigation Pills */}
+        {/* Interactive Module Navigation Pills with Micro Lift and Illuminated Borders */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-12">
           {modules.map((mod, index) => {
             const Icon = mod.icon;
             const isSelected = activeModule === index;
             return (
-              <button
+              <motion.button
                 key={mod.id}
+                initial={{ opacity: 0, y: 15 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08, duration: 0.4 }}
+                whileHover={{ y: -2 }}
                 onClick={() => setActiveModule(index)}
                 className={`text-left p-4 rounded-xl border transition-all duration-300 relative ${
                   isSelected
@@ -136,12 +163,12 @@ export const TechnologySection: React.FC = () => {
                   <span className={`text-xs font-mono font-bold ${isSelected ? 'text-lime-accent' : 'text-olive-400'}`}>
                     MODULE {mod.number}
                   </span>
-                  <Icon className={`w-4 h-4 ${isSelected ? 'text-lime-accent' : 'text-olive-400'}`} />
+                  <Icon className={`w-4 h-4 transition-transform ${isSelected ? 'text-lime-accent scale-110' : 'text-olive-400'}`} />
                 </div>
                 <div className="font-display font-semibold text-sm leading-tight">
                   {mod.title}
                 </div>
-              </button>
+              </motion.button>
             );
           })}
         </div>
@@ -157,7 +184,7 @@ export const TechnologySection: React.FC = () => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.4 }}
+                transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
                 className="rounded-2xl border border-forest-700/80 bg-forest-950/80 p-6 sm:p-8 lg:p-10 shadow-elevated"
               >
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
@@ -200,7 +227,7 @@ export const TechnologySection: React.FC = () => {
                   </div>
 
                   {/* Right Column: Architectural Specification Panel */}
-                  <div className="lg:col-span-5 bg-charcoal-900/90 rounded-xl border border-forest-800 p-6 flex flex-col gap-6">
+                  <div className="lg:col-span-5 bg-charcoal-900/90 rounded-xl border border-forest-800 p-6 flex flex-col gap-6 shadow-xl">
                     <div className="flex items-center justify-between pb-4 border-b border-forest-800">
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-lg bg-forest-900 border border-lime-dim flex items-center justify-center">
@@ -219,7 +246,7 @@ export const TechnologySection: React.FC = () => {
                     {/* Spec Items */}
                     <div className="flex flex-col gap-3.5">
                       {mod.technicalSpecs.map((spec) => (
-                        <div key={spec.label} className="flex flex-col p-2.5 rounded bg-forest-950/70 border border-forest-800/80">
+                        <div key={spec.label} className="flex flex-col p-2.5 rounded bg-forest-950/70 border border-forest-800/80 hover:border-forest-700 transition-colors">
                           <span className="text-[10px] font-mono uppercase text-olive-400">{spec.label}</span>
                           <span className="text-xs font-mono font-medium text-sand-100 mt-0.5">{spec.value}</span>
                         </div>
