@@ -1,0 +1,188 @@
+# ==============================================================================
+# AgriSentinel .gitignore
+# UAV-Based Intelligent Agricultural Field Assessment & Paddy Yield Estimation System
+# ==============================================================================
+
+# ------------------------------------------------------------------------------
+# Environment & Secrets (Never commit credentials or tokens)
+# ------------------------------------------------------------------------------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.cert
+*.crt
+credentials.json
+service-account*.json
+secrets/
+
+# ------------------------------------------------------------------------------
+# Python & Virtual Environments
+# ------------------------------------------------------------------------------
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Jupyter & IPython
+.ipynb_checkpoints
+*/.ipynb_checkpoints/*
+
+# Testing & Coverage
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# ------------------------------------------------------------------------------
+# Node.js & Frontend Build Artifacts
+# ------------------------------------------------------------------------------
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.pnpm-debug.log*
+.next/
+out/
+.nuxt/
+.vuepress/dist
+.cache/
+
+# ------------------------------------------------------------------------------
+# Photogrammetry, 3D Point Clouds, Meshes & Large Imagery Outputs
+# ------------------------------------------------------------------------------
+# Point Clouds & 3D Formats
+*.ply
+*.pcd
+*.las
+*.laz
+*.obj
+*.mtl
+*.stl
+*.fbx
+*.e57
+*.xyz
+*.pts
+*.gltf
+*.glb
+
+# GeoTIFF, DEM, Orthomosaic & Aerial Raster Outputs
+*.tif
+*.tiff
+*.geotiff
+*.dem
+*.dsm
+*.dtm
+
+# Photogrammetry Pipeline Intermediate Workspaces & Caches
+opensfm/
+colmap_workspace/
+odm_orthophoto/
+odm_texturing/
+odm_georeferencing/
+opensfm_workspace/
+*.blend
+*.blend1
+
+# Dataset directories (preserve directory structure via .gitkeep)
+datasets/raw/*
+!datasets/raw/.gitkeep
+datasets/processed/*
+!datasets/processed/.gitkeep
+
+# Archives & Large Bundles
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.rar
+*.7z
+
+# ------------------------------------------------------------------------------
+# Databases & Persistent Storage
+# ------------------------------------------------------------------------------
+*.sqlite
+*.sqlite3
+*.db
+*.db-shm
+*.db-wal
+*.db-journal
+
+# ------------------------------------------------------------------------------
+# Operating System & IDE Configurations
+# ------------------------------------------------------------------------------
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+*.stackdump
+[Dd]esktop.ini
+$RECYCLE.BIN/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# IDEs and Editors
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.sublime-workspace
+*.sublime-project
+*.swp
+*.swo
+*~
+
+# ------------------------------------------------------------------------------
+# Temporary Files & Logs
+# ------------------------------------------------------------------------------
+*.log
+*.tmp
+*.temp
+scratch/
+tmp/
