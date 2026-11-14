@@ -2,14 +2,12 @@ import React, { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
+import { PlatformStatsSection } from './components/PlatformStatsSection';
+import { CorePillarsSection } from './components/CorePillarsSection';
 import { PlatformPreviewSection } from './components/PlatformPreviewSection';
-import { MetricsStrip } from './components/MetricsStrip';
-import { AboutSection } from './components/AboutSection';
-import { TechnologySection } from './components/TechnologySection';
-import { WorkflowSection } from './components/WorkflowSection';
-import { YieldMethodologySection } from './components/YieldMethodologySection';
-import { ResearchSection } from './components/ResearchSection';
-import { CTASection } from './components/CTASection';
+import { InteractiveGisShowcase } from './components/InteractiveGisShowcase';
+import { StakeholderPortalsSection } from './components/StakeholderPortalsSection';
+import { TechnicalMethodologySection } from './components/TechnicalMethodologySection';
 import { Footer } from './components/Footer';
 import { LaunchPlatformModal } from './components/LaunchPlatformModal';
 
@@ -21,7 +19,7 @@ import { AdminDashboard } from './pages/dashboards/AdminDashboard';
 import { ProtectedRoute } from './components/ProtectedRoute';
 import { UserRole } from './types';
 
-// The Main Landing Page Component
+// The Main Institutional Landing Page Component
 const LandingPage: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -29,41 +27,35 @@ const LandingPage: React.FC = () => {
   const handleCloseModal = () => setModalOpen(false);
 
   return (
-    <div className="min-h-screen bg-charcoal-950 text-sand-100 flex flex-col font-sans selection:bg-lime-dim selection:text-lime-accent">
-      {/* Fixed Navigation Bar */}
+    <div className="min-h-screen bg-[#F8FAF9] text-[#172B22] flex flex-col font-sans selection:bg-[#E6F4EA] selection:text-[#008C45]">
+      {/* 1 & 2. Institutional Utility Bar & Professional Navigation Header */}
       <Navbar onOpenPreview={handleOpenModal} />
 
-      {/* Main Content Sections - 3D Heap Directly Below Hero */}
+      {/* Main Content Sections */}
       <main className="flex-1">
-        {/* 1. Hero Section */}
+        {/* 3 & 4. Hero Section with Required Headline & Prominent CTAs */}
         <HeroSection onExploreClick={handleOpenModal} />
 
-        {/* 2. Interactive 3D Heap Reconstruction & Platform Preview */}
+        {/* 5. Platform Statistics Section (Real Database & LGD Records) */}
+        <PlatformStatsSection />
+
+        {/* 6. Three Core Foundational Pillars (AgriStack Architecture) */}
+        <CorePillarsSection />
+
+        {/* 7. Interactive 3D Grain Heap Reconstruction Showcase */}
         <PlatformPreviewSection />
 
-        {/* 3. Technology Capabilities */}
-        <MetricsStrip />
+        {/* 8. Interactive Satellite GIS Map Showcase */}
+        <InteractiveGisShowcase />
 
-        {/* 4. About AgriSentinel & Assessment Challenges */}
-        <AboutSection />
+        {/* 9. Agricultural Stakeholder Portal Access Gateways */}
+        <StakeholderPortalsSection />
 
-        {/* 5. Technology Architecture */}
-        <TechnologySection />
-
-        {/* 6. Execution Workflow */}
-        <WorkflowSection />
-
-        {/* 7. Yield Methodology & Mathematical Simulation */}
-        <YieldMethodologySection />
-
-        {/* 8. Research and Innovation */}
-        <ResearchSection />
-
-        {/* 9. Closing Action Callout */}
-        <CTASection onExploreClick={handleOpenModal} />
+        {/* 10. Technical Methodology & UAV Specifications */}
+        <TechnicalMethodologySection />
       </main>
 
-      {/* 10. Comprehensive Footer */}
+      {/* 11. Comprehensive Institutional Footer */}
       <Footer />
 
       {/* Interactive Platform Concept Modal */}
