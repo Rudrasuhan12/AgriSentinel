@@ -19,9 +19,12 @@ class CadastralParcelResponse(BaseModel):
     district: str
     tahasil: str
     village: str
+    mouza: Optional[str] = None
     recorded_area_acres: float
     calculated_area_acres: float
     geometry: Dict[str, Any]
+    crs: str = "EPSG:4326"
+    centroid: Optional[List[float]] = None
     bbox: List[float] # [min_lon, min_lat, max_lon, max_lat]
     source: str
     source_reference: Optional[str] = None

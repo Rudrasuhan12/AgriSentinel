@@ -68,6 +68,26 @@ async def run_cadastral_tests():
         assert len(lookup_data["parcel"]["bbox"]) == 4
         print(f"✓ Test 5: Cadastral plot 640/2536 resolved with exact bounding box {lookup_data['parcel']['bbox']}.")
 
+        # Test 5b: Find target test cadastral plot (Plot 640/2536 in Bidyadharpur, Cuttack Sadar, Cuttack)
+        bidya_res = await client.post("/api/cadastral/lookup", headers=headers, json={
+            "state": "Odisha",
+            "district": "Cuttack",
+            "tahasil": "Cuttack Sadar",
+            "village": "Bidyadharpur",
+            "khata_number": "299/611",
+            "plot_number": "640/2536"
+        })
+        assert bidya_res.status_code == 200
+        bidya_data = bidya_res.json()
+        assert bidya_data["success"] is True, f"Bidyadharpur lookup failed: {bidya_data}"
+        assert bidya_data["parcel"]["plot_number"] == "640/2536"
+        assert bidya_data["parcel"]["tahasil"] == "Cuttack Sadar"
+        assert bidya_data["parcel"]["village"] == "Bidyadharpur"
+        assert bidya_data["parcel"]["centroid"] is not None
+        assert bidya_data["parcel"]["crs"] == "EPSG:4326"
+        assert len(bidya_data["surrounding_parcels"]) >= 2
+        print(f"✓ Test 5b: Target test parcel 640/2536 in Bidyadharpur, Cuttack Sadar resolved with centroid {bidya_data['parcel']['centroid']} and {len(bidya_data['surrounding_parcels'])} surrounding parcels.")
+
         # Test 6: Handle non-existent plot
         inv_plot_res = await client.post("/api/cadastral/lookup", headers=headers, json={
             "state": "Odisha",

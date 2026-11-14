@@ -37,14 +37,18 @@ interface CadastralLookupResult {
     district: string;
     tahasil: string;
     village: string;
+    mouza?: string;
     recorded_area_acres: number;
     calculated_area_acres: number;
     geometry: {
       type: string;
       coordinates: number[][][];
     };
+    crs?: string;
+    centroid?: [number, number];
     bbox: [number, number, number, number];
     source: string;
+    source_reference?: string;
     verification_status: string;
   };
   surrounding_parcels?: {
@@ -111,6 +115,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
   const drawnPolygonRef = useRef<L.Polygon | null>(null);
   const surroundingGroupRef = useRef<L.FeatureGroup | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
+  const centroidMarkerRef = useRef<L.Marker | null>(null);
 
   // 1. Initialize Leaflet Map
   useEffect(() => {
@@ -244,14 +249,31 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
     setError(null);
     setLookupMessage(null);
 
-    const targetPlot = overrideParams?.plot_number !== undefined ? overrideParams.plot_number : plotNumber;
-    const targetKhata = overrideParams?.khata_number !== undefined ? overrideParams.khata_number : khataNumber;
-    const targetDistrict = overrideParams?.district !== undefined ? overrideParams.district : district;
-    const targetTahasil = overrideParams?.tahasil !== undefined ? overrideParams.tahasil : subDistrict;
-    const targetVillage = overrideParams?.village !== undefined ? overrideParams.village : village;
+    const targetPlot = (overrideParams?.plot_number !== undefined ? overrideParams.plot_number : plotNumber).trim();
+    const targetKhata = (overrideParams?.khata_number !== undefined ? overrideParams.khata_number : khataNumber).trim();
+    const targetDistrict = (overrideParams?.district !== undefined ? overrideParams.district : district).trim();
+    const targetTahasil = (overrideParams?.tahasil !== undefined ? overrideParams.tahasil : subDistrict).trim();
+    const targetVillage = (overrideParams?.village !== undefined ? overrideParams.village : village).trim();
 
-    if (!targetPlot.trim()) {
-      setError('Please provide a Plot / Dag Number for cadastral resolution.');
+    // 1. Strict validation of all administrative and land record identifiers
+    if (!targetDistrict) {
+      setError('Please select or specify District.');
+      return;
+    }
+    if (!targetTahasil) {
+      setError('Please select or specify Tahasil / Sub-District.');
+      return;
+    }
+    if (!targetVillage) {
+      setError('Please select or specify Revenue Mouza / Village.');
+      return;
+    }
+    if (!targetKhata) {
+      setError('Please provide Bhulekh Khata Number.');
+      return;
+    }
+    if (!targetPlot) {
+      setError('Please provide Plot / Dag Number for cadastral resolution.');
       return;
     }
 
@@ -264,11 +286,11 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
         district: targetDistrict,
         tahasil: targetTahasil,
         village: targetVillage,
-        khata_number: targetKhata.trim() || '299/611',
-        plot_number: targetPlot.trim(),
+        khata_number: targetKhata,
+        plot_number: targetPlot,
       });
 
-      if (response.success && response.parcel) {
+      if (response.success && response.parcel && response.parcel.geometry) {
         setLookupStatus('found');
         setLookupMessage(response.message);
         setOfficialRecordedArea(response.parcel.recorded_area_acres);
@@ -284,26 +306,29 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
         const distinctCoords = leafletCoords.slice(0, -1);
         setPolygonCoords(distinctCoords);
 
-        // Compute geodesic area
+        // Compute geodesic area using PostGIS/ellipsoidal calculation
         const areaM2 = computeGeodesicPolygonArea(distinctCoords);
         const acres = Number((areaM2 * 0.000247105).toFixed(2));
         setCalculatedAreaAcres(acres);
 
-        // Render on map and fitBounds
+        // Render on map, add centroid marker, add vertex markers, and fitBounds
         if (mapInstanceRef.current) {
           const map = mapInstanceRef.current;
 
-          // Clear manual vertex markers
+          // Clear existing markers and previous drawn elements
           markersRef.current.forEach((m) => map.removeLayer(m));
           markersRef.current = [];
 
-          // Clear previous polygon
+          if (centroidMarkerRef.current) {
+            map.removeLayer(centroidMarkerRef.current);
+            centroidMarkerRef.current = null;
+          }
+
           if (drawnPolygonRef.current) {
             map.removeLayer(drawnPolygonRef.current);
             drawnPolygonRef.current = null;
           }
 
-          // Clear previous surrounding parcels
           if (surroundingGroupRef.current) {
             surroundingGroupRef.current.clearLayers();
           }
@@ -336,23 +361,77 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
             weight: 3,
           }).addTo(map);
 
+          // 3. Add Centroid Marker at the polygon centroid
+          const centroidLatLng: [number, number] = response.parcel.centroid
+            ? [response.parcel.centroid[0], response.parcel.centroid[1]]
+            : [targetPoly.getBounds().getCenter().lat, targetPoly.getBounds().getCenter().lng];
+
+          const centroidIcon = L.divIcon({
+            className: 'custom-centroid-marker',
+            html: `<div style="
+              background: #008C45;
+              color: #FFFFFF;
+              border: 2px solid #FFFFFF;
+              border-radius: 50%;
+              width: 28px;
+              height: 28px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+              font-size: 13px;
+              line-height: 1;
+            ">📍</div>`,
+            iconSize: [28, 28],
+            iconAnchor: [14, 14],
+          });
+
+          const centroidMarker = L.marker(centroidLatLng as L.LatLngExpression, { icon: centroidIcon }).addTo(map);
+          centroidMarker.bindTooltip(`Plot #${response.parcel.plot_number} Centroid`, {
+            direction: 'top',
+            offset: [0, -12],
+            className: 'font-semibold text-xs',
+          });
+          centroidMarkerRef.current = centroidMarker;
+
+          // 4. Draw vertex circle markers on boundary corners
+          distinctCoords.forEach((pt, index) => {
+            const vMarker = L.circleMarker(pt, {
+              radius: 5,
+              color: '#008C45',
+              fillColor: '#FFFFFF',
+              fillOpacity: 1,
+              weight: 2,
+            }).addTo(map);
+            vMarker.bindTooltip(`Vertex ${index + 1}: [${pt[0].toFixed(5)}, ${pt[1].toFixed(5)}]`, {
+              direction: 'top',
+              className: 'font-mono text-[10px]',
+            });
+            markersRef.current.push(vMarker as any);
+          });
+
+          // 5. Detailed parcel popup with CRS and administrative identifiers
           targetPoly.bindPopup(`
-            <div style="font-family: sans-serif; font-size: 12px; line-height: 1.5; color: #172B22;">
-              <div style="font-weight: bold; color: #008C45; font-size: 13px; margin-bottom: 4px;">
+            <div style="font-family: sans-serif; font-size: 12px; line-height: 1.5; color: #172B22; min-width: 220px;">
+              <div style="font-weight: bold; color: #008C45; font-size: 13px; margin-bottom: 4px; border-bottom: 1px solid #E2E8F0; padding-bottom: 4px;">
                 Plot #${response.parcel.plot_number} (Khata: ${response.parcel.khata_number})
               </div>
-              <div><strong>Village:</strong> ${response.parcel.village}, ${response.parcel.tahasil}</div>
+              <div><strong>District:</strong> ${response.parcel.district}</div>
+              <div><strong>Tahasil:</strong> ${response.parcel.tahasil}</div>
+              <div><strong>Revenue Mouza:</strong> ${response.parcel.mouza || response.parcel.village}</div>
               <div><strong>Recorded Area:</strong> ${response.parcel.recorded_area_acres} Acres</div>
-              <div><strong>Calculated Area:</strong> ${acres} Acres</div>
-              <div style="margin-top: 4px; padding: 2px 6px; background: #E6F4EA; color: #137333; border-radius: 4px; font-weight: 600; display: inline-block;">
-                ${response.parcel.verification_status}
+              <div><strong>Calculated Geodesic Area:</strong> ${acres} Acres</div>
+              <div><strong>CRS:</strong> ${response.parcel.crs || 'EPSG:4326'}</div>
+              <div><strong>Source:</strong> ${response.parcel.source}</div>
+              <div style="margin-top: 6px; padding: 2px 6px; background: #E6F4EA; color: #137333; border-radius: 4px; font-weight: 600; display: inline-block;">
+                ✓ ${response.parcel.verification_status}
               </div>
             </div>
           `);
 
           drawnPolygonRef.current = targetPoly;
 
-          // 3. Zoom directly to parcel bounding box with comfortable padding
+          // 6. Zoom directly to parcel bounding box with comfortable padding
           const [minLon, minLat, maxLon, maxLat] = response.parcel.bbox;
           const bounds = L.latLngBounds([minLat, minLon], [maxLat, maxLon]);
           map.fitBounds(bounds, { padding: [50, 50], maxZoom: 18 });
@@ -364,13 +443,16 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
         setLookupMessage(response.message);
       } else {
         setLookupStatus('not_found');
-        setLookupMessage(response.message);
+        setLookupMessage(
+          response.message ||
+          'Parcel geometry could not be retrieved. Please verify the land identifiers or delineate the boundary manually.'
+        );
         setIsOfficialCadastral(false);
         setCadastralSource('Farmer Digitized Boundary (Awaiting Official Cadastral Survey Verification)');
       }
     } catch (err: any) {
       setLookupStatus('error');
-      setLookupMessage(err.message || 'Cadastral lookup service unavailable. You may digitize manually.');
+      setLookupMessage('Parcel geometry could not be retrieved. Please verify the land identifiers or delineate the boundary manually.');
       setIsOfficialCadastral(false);
     } finally {
       setLookupLoading(false);
@@ -416,6 +498,10 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
     // Clear old markers
     markersRef.current.forEach((m) => map.removeLayer(m));
     markersRef.current = [];
+    if (centroidMarkerRef.current) {
+      map.removeLayer(centroidMarkerRef.current);
+      centroidMarkerRef.current = null;
+    }
 
     // Draw vertex circle markers
     coords.forEach((coord, i) => {
@@ -483,6 +569,10 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
     if (mapInstanceRef.current) {
       markersRef.current.forEach((m) => mapInstanceRef.current?.removeLayer(m));
       markersRef.current = [];
+      if (centroidMarkerRef.current) {
+        mapInstanceRef.current.removeLayer(centroidMarkerRef.current);
+        centroidMarkerRef.current = null;
+      }
       if (drawnPolygonRef.current) {
         mapInstanceRef.current.removeLayer(drawnPolygonRef.current);
         drawnPolygonRef.current = null;
@@ -601,7 +691,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
           </div>
         )}
 
-        {lookupStatus === 'not_found' && lookupMessage && (
+        {(lookupStatus === 'not_found' || lookupStatus === 'error') && lookupMessage && (
           <div className="mx-5 mt-3 p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs flex items-center gap-2 shrink-0">
             <AlertTriangle className="w-4 h-4 shrink-0 text-amber-600" />
             <div>
@@ -671,7 +761,7 @@ export const FieldRegistrationMapModal: React.FC<FieldRegistrationMapModalProps>
               <button
                 type="button"
                 onClick={() => handleCadastralLookup()}
-                disabled={lookupLoading || !plotNumber.trim()}
+                disabled={lookupLoading}
                 className="w-full py-2.5 px-3 rounded-xl bg-gradient-to-r from-[#008C45] to-[#006B36] hover:from-[#007a3c] hover:to-[#005c2e] text-white font-semibold flex items-center justify-center gap-2 shadow-xs disabled:opacity-50 cursor-pointer transition-all"
               >
                 {lookupLoading ? (

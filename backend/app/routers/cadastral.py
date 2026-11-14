@@ -142,21 +142,54 @@ async def lookup_cadastral_parcel(
                 ST_YMin(geom) as min_lat,
                 ST_XMax(geom) as max_lon,
                 ST_YMax(geom) as max_lat,
+                ST_Y(ST_Centroid(geom)) as centroid_lat,
+                ST_X(ST_Centroid(geom)) as centroid_lon,
                 source, source_reference, verification_status
             FROM cadastral_parcels
             WHERE district_name ILIKE :district
               AND tahasil_name ILIKE :tahasil
               AND village_name ILIKE :village
               AND (plot_number ILIKE :plot OR plot_number = :plot)
+              AND (:khata = '' OR khata_number ILIKE :khata OR khata_number = :khata)
         """)
 
         result = await db.execute(query, {
             "district": district,
             "tahasil": tahasil,
             "village": village,
-            "plot": plot
+            "plot": plot,
+            "khata": khata
         })
         rows = result.fetchall()
+        
+        # If no match with khata filter, try without khata filter
+        if not rows and khata:
+            query_no_khata = text("""
+                SELECT 
+                    id, state_code, district_name, tahasil_name, village_name,
+                    khata_number, plot_number, recorded_area_acres,
+                    ROUND(CAST(ST_Area(geom::geography) * 0.000247105 AS numeric), 2) as calc_area_acres,
+                    ST_AsGeoJSON(geom) as geom_json,
+                    ST_XMin(geom) as min_lon,
+                    ST_YMin(geom) as min_lat,
+                    ST_XMax(geom) as max_lon,
+                    ST_YMax(geom) as max_lat,
+                    ST_Y(ST_Centroid(geom)) as centroid_lat,
+                    ST_X(ST_Centroid(geom)) as centroid_lon,
+                    source, source_reference, verification_status
+                FROM cadastral_parcels
+                WHERE district_name ILIKE :district
+                  AND tahasil_name ILIKE :tahasil
+                  AND village_name ILIKE :village
+                  AND (plot_number ILIKE :plot OR plot_number = :plot)
+            """)
+            result = await db.execute(query_no_khata, {
+                "district": district,
+                "tahasil": tahasil,
+                "village": village,
+                "plot": plot
+            })
+            rows = result.fetchall()
     else:
         rows = []
 
@@ -172,6 +205,8 @@ async def lookup_cadastral_parcel(
                 ST_YMin(geom) as min_lat,
                 ST_XMax(geom) as max_lon,
                 ST_YMax(geom) as max_lat,
+                ST_Y(ST_Centroid(geom)) as centroid_lat,
+                ST_X(ST_Centroid(geom)) as centroid_lon,
                 source, source_reference, verification_status
             FROM cadastral_parcels
             WHERE district_name ILIKE :district
@@ -194,7 +229,7 @@ async def lookup_cadastral_parcel(
     if not rows:
         return CadastralLookupResponse(
             success=False,
-            message="No cadastral polygon found for the supplied land-record details. You can manually digitize your field boundary or submit it for cadastral data verification.",
+            message="Parcel geometry could not be retrieved. Please verify the land identifiers or delineate the boundary manually.",
             fallback_allowed=True
         )
 
@@ -233,6 +268,11 @@ async def lookup_cadastral_parcel(
         float(matched_row.max_lat),
     ]
 
+    centroid = [
+        float(matched_row.centroid_lat),
+        float(matched_row.centroid_lon)
+    ] if matched_row.centroid_lat is not None and matched_row.centroid_lon is not None else None
+
     # Fetch surrounding parcels in same village for contextual map rendering
     surrounding_query = text("""
         SELECT plot_number, khata_number, recorded_area_acres, ST_AsGeoJSON(geom) as geom_json
@@ -268,9 +308,12 @@ async def lookup_cadastral_parcel(
         district=matched_row.district_name,
         tahasil=matched_row.tahasil_name,
         village=matched_row.village_name,
+        mouza=matched_row.village_name,
         recorded_area_acres=float(matched_row.recorded_area_acres),
         calculated_area_acres=float(matched_row.calc_area_acres),
         geometry=geom_dict,
+        crs="EPSG:4326",
+        centroid=centroid,
         bbox=bbox,
         source=matched_row.source,
         source_reference=matched_row.source_reference,

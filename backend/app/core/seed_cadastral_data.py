@@ -163,6 +163,72 @@ CADASTRAL_DATASETS = [
     },
     {
         "state_code": "OD",
+        "district_name": "Cuttack",
+        "district_code": "CUT",
+        "tahasil_name": "Cuttack Sadar",
+        "tahasil_code": "CSD",
+        "village_name": "Bidyadharpur",
+        "village_code": "BDP",
+        "khata_number": "299/611",
+        "plot_number": "640/2536",
+        "recorded_area_acres": 4.85,
+        "coordinates": [
+            [85.93120, 20.45420],
+            [85.93350, 20.45480],
+            [85.93390, 20.45310],
+            [85.93160, 20.45260],
+            [85.93120, 20.45420]
+        ],
+        "source": "Odisha Cadastral Survey Dataset (Bhulekh Records - Schedule I Form 39-A)",
+        "source_reference": "REV-CAD-OD-CUT-CSD-BDP-640-2536",
+        "verification_status": "OFFICIAL_CADASTRAL"
+    },
+    {
+        "state_code": "OD",
+        "district_name": "Cuttack",
+        "district_code": "CUT",
+        "tahasil_name": "Cuttack Sadar",
+        "tahasil_code": "CSD",
+        "village_name": "Bidyadharpur",
+        "village_code": "BDP",
+        "khata_number": "299/611",
+        "plot_number": "640/2535",
+        "recorded_area_acres": 3.92,
+        "coordinates": [
+            [85.92880, 20.45380],
+            [85.93120, 20.45420],
+            [85.93160, 20.45260],
+            [85.92920, 20.45210],
+            [85.92880, 20.45380]
+        ],
+        "source": "Odisha Cadastral Survey Dataset (Bhulekh Records)",
+        "source_reference": "REV-CAD-OD-CUT-CSD-BDP-640-2535",
+        "verification_status": "OFFICIAL_CADASTRAL"
+    },
+    {
+        "state_code": "OD",
+        "district_name": "Cuttack",
+        "district_code": "CUT",
+        "tahasil_name": "Cuttack Sadar",
+        "tahasil_code": "CSD",
+        "village_name": "Bidyadharpur",
+        "village_code": "BDP",
+        "khata_number": "299/611",
+        "plot_number": "640/2537",
+        "recorded_area_acres": 5.12,
+        "coordinates": [
+            [85.93350, 20.45480],
+            [85.93580, 20.45530],
+            [85.93620, 20.45360],
+            [85.93390, 20.45310],
+            [85.93350, 20.45480]
+        ],
+        "source": "Odisha Cadastral Survey Dataset (Bhulekh Records)",
+        "source_reference": "REV-CAD-OD-CUT-CSD-BDP-640-2537",
+        "verification_status": "OFFICIAL_CADASTRAL"
+    },
+    {
+        "state_code": "OD",
         "district_name": "Khordha",
         "district_code": "KHD",
         "tahasil_name": "Bhubaneswar",

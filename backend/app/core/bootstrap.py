@@ -7,6 +7,7 @@ from app.models.farmer_profile import FarmerProfile
 from app.models.official_request import OfficialAccessRequest, ApprovalStatus
 from app.core.security import hash_password
 from app.core.seed_personas import seed_all_personas
+from app.core.seed_cadastral_data import init_and_seed_cadastral
 from app.config import settings
 
 
@@ -21,8 +22,12 @@ async def init_db_tables():
 
 
 async def bootstrap_initial_admin(db: AsyncSession | None = None) -> bool:
-    """Bootstrap initial admin user and demo personas."""
+    """Bootstrap initial admin user, demo personas, and cadastral datasets."""
     await seed_all_personas()
+    try:
+        await init_and_seed_cadastral()
+    except Exception as e:
+        print(f"[BOOTSTRAP] Cadastral seed notice: {e}")
     return True
 
 
