@@ -5,7 +5,7 @@ from typing import List, Dict, Any, Tuple, Optional
 from dataclasses import dataclass, asdict
 
 try:
-    from scipy.spatial import Delaunay
+    from scipy.spatial import Delaunay  # type: ignore
 except ImportError:
     Delaunay = None
 
@@ -54,7 +54,11 @@ class MultiViewPhotogrammetryEngine:
 
     def __init__(self, min_images: int = 4):
         self.min_images = min_images
-        self.orb = cv2.ORB_create(nfeatures=2500)
+        orb_create = getattr(cv2, "ORB_create", getattr(getattr(cv2, "ORB", None), "create", None))
+        if callable(orb_create):
+            self.orb = orb_create(nfeatures=2500)
+        else:
+            self.orb = cv2.ORB_create(nfeatures=2500)  # type: ignore[attr-defined]
         self.matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
     def validate_image(self, image_bgr: np.ndarray) -> Tuple[bool, float, str]:
