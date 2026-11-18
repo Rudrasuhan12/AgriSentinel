@@ -15,6 +15,7 @@ from app.routers.surveys import router as surveys_router
 from app.routers.processing import router as processing_router
 from app.routers.heaps import router as heaps_router
 from app.routers.yields import router as yields_router
+from app.routers.government import router as government_router
 
 
 @asynccontextmanager
@@ -61,6 +62,7 @@ app.include_router(surveys_router)
 app.include_router(processing_router)
 app.include_router(heaps_router)
 app.include_router(yields_router)
+app.include_router(government_router)
 
 # Mount alias for /auth routes directly so both /api/auth/* and /auth/* are served
 from fastapi import APIRouter
