@@ -4,6 +4,11 @@ import numpy as np
 from typing import List, Dict, Any, Tuple, Optional
 from dataclasses import dataclass, asdict
 
+try:
+    from scipy.spatial import Delaunay
+except ImportError:
+    Delaunay = None
+
 
 @dataclass
 class PhotogrammetryQualityReport:
@@ -68,14 +73,14 @@ class MultiViewPhotogrammetryEngine:
     def estimate_base_plane_ransac(self, points: np.ndarray, max_iterations: int = 1000, distance_threshold: float = 0.05) -> Tuple[np.ndarray, np.ndarray]:
         """
         RANSAC fitting of reference ground/threshing-yard plane (Ax + By + Cz + D = 0).
-        Returns plane coefficients [A, B, C, D] (normalized) and inlier boolean mask.
+        Returns plane coefficients [A, B, C, D] (normalized, oriented upward) and inlier boolean mask.
         """
         n = points.shape[0]
         if n < 3:
             return np.array([0.0, 1.0, 0.0, 0.0]), np.ones(n, dtype=bool)
 
         # Ground points lie at lower Y or lower Z depending on axis orientation
-        # Identify candidate ground points in the bottom 25th percentile
+        # Identify candidate ground points in the bottom 35th percentile
         y_coords = points[:, 1]
         ground_candidates = np.where(y_coords <= np.percentile(y_coords, 35))[0]
         if len(ground_candidates) < 3:
@@ -98,6 +103,10 @@ class MultiViewPhotogrammetryEngine:
                 continue
             normal = normal / norm
 
+            # Ensure normal vector points upwards (+Y)
+            if normal[1] < 0:
+                normal = -normal
+
             d = -np.dot(normal, p1)
             # Distance of all points to plane: |Ax + By + Cz + D|
             distances = np.abs(np.dot(points, normal) + d)
@@ -106,6 +115,10 @@ class MultiViewPhotogrammetryEngine:
             if len(inliers) > len(best_inliers):
                 best_inliers = inliers
                 best_plane = np.append(normal, d)
+
+        # Final guarantee that the fitted plane normal points upward
+        if best_plane[1] < 0:
+            best_plane = -best_plane
 
         inlier_mask = np.zeros(n, dtype=bool)
         inlier_mask[best_inliers] = True
@@ -116,8 +129,16 @@ class MultiViewPhotogrammetryEngine:
         Calculates metric volume strictly above the reference ground plane using 2.5D DEM prism integration.
         Returns: volume_m3, peak_height_m, footprint_area_m2.
         """
-        normal = base_plane[:3]
-        d = base_plane[3]
+        if len(points) < 3:
+            return 0.0, 0.0, 0.0
+
+        normal = np.array(base_plane[:3], dtype=float)
+        d = float(base_plane[3])
+
+        # Ensure normal vector is oriented upward (+Y)
+        if normal[1] < 0:
+            normal = -normal
+            d = -d
 
         # Signed distance of each point to the plane: (n . p + d)
         heights = np.dot(points, normal) + d
@@ -137,13 +158,17 @@ class MultiViewPhotogrammetryEngine:
 
         # Convex hull area for footprint
         xy_proj = np.column_stack((x_pts, z_pts))
-        hull = cv2.convexHull(xy_proj.astype(np.float32))
-        footprint_area = float(cv2.contourArea(hull))
+        if len(xy_proj) >= 3:
+            hull = cv2.convexHull(xy_proj.astype(np.float32))
+            footprint_area = float(cv2.contourArea(hull))
+        else:
+            footprint_area = 0.0
 
         # Numerical prism integration using regular 2D raster DEM
         min_x, max_x = np.min(x_pts), np.max(x_pts)
         min_z, max_z = np.min(z_pts), np.max(z_pts)
 
+        grid_res = max(0.01, grid_res)
         x_bins = int(np.ceil((max_x - min_x) / grid_res)) + 1
         z_bins = int(np.ceil((max_z - min_z) / grid_res)) + 1
 
@@ -278,12 +303,18 @@ class MultiViewPhotogrammetryEngine:
         mass_quintals = mass_kg / 100.0
 
         # Generate lightweight surface mesh via Delaunay triangulation
-        from scipy.spatial import Delaunay
         downsample_idx = rng.choice(n_dense_pts, min(1200, n_dense_pts), replace=False)
-        tri = Delaunay(points_3d[downsample_idx][:, [0, 2]])
+        pts_sampled = points_3d[downsample_idx]
+        mesh_vertices = pts_sampled.tolist()
 
-        mesh_indices = tri.simplices.flatten().tolist()
-        mesh_vertices = points_3d[downsample_idx].tolist()
+        if Delaunay is not None:
+            try:
+                tri = Delaunay(pts_sampled[:, [0, 2]])
+                mesh_indices = tri.simplices.flatten().tolist()
+            except Exception:
+                mesh_indices = []
+        else:
+            mesh_indices = []
 
         quality = PhotogrammetryQualityReport(
             valid_images=len(valid_images),
